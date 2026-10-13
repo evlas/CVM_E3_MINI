@@ -1,0 +1,56 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Circutor CVM-E3-MINI: Connection Type",
+        "description": "Select the Modbus connection mode for the Circutor CVM-E3-MINI power analyzer.",
+        "data": {
+          "connection_type": "Connection type"
+        }
+      },
+      "tcp": {
+        "title": "Modbus TCP Connection (Ethernet / Wi-Fi)",
+        "description": "Enter the network parameters for the CVM-E3-MINI-xxx-WiEth or Modbus TCP gateway.",
+        "data": {
+          "host": "IP Address or Hostname",
+          "port": "TCP Port (default 502)",
+          "slave_id": "Modbus Unit / Slave ID",
+          "wiring_system": "Electrical wiring system",
+          "scan_interval": "Update interval (seconds)"
+        }
+      },
+      "rtu": {
+        "title": "Modbus RTU Connection (RS-485 Serial)",
+        "description": "Enter the serial port parameters connected to the CVM-E3-MINI.",
+        "data": {
+          "serial_port": "Serial Port (e.g. /dev/ttyUSB0)",
+          "baudrate": "Baudrate",
+          "parity": "Parity",
+          "stopbits": "Stop bits",
+          "slave_id": "Modbus Unit / Slave ID",
+          "wiring_system": "Electrical wiring system",
+          "scan_interval": "Update interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Modbus device",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This Circutor CVM-E3-MINI device is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Circutor CVM-E3-MINI Options",
+        "description": "Modify integration operational settings.",
+        "data": {
+          "scan_interval": "Update interval (seconds)",
+          "wiring_system": "Electrical wiring system"
+        }
+      }
+    }
+  }
+}

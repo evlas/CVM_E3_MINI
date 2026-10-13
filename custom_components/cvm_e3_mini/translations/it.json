@@ -1,0 +1,56 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Circutor CVM-E3-MINI: Tipo Connessione",
+        "description": "Seleziona la modalità di connessione Modbus per l'analizzatore di rete Circutor CVM-E3-MINI.",
+        "data": {
+          "connection_type": "Tipo di connessione"
+        }
+      },
+      "tcp": {
+        "title": "Connessione Modbus TCP (Ethernet / Wi-Fi)",
+        "description": "Inserisci i parametri di rete dell'analizzatore CVM-E3-MINI-xxx-WiEth o del gateway Modbus TCP.",
+        "data": {
+          "host": "Indirizzo IP o Host",
+          "port": "Porta TCP (default 502)",
+          "slave_id": "Indirizzo Periferico Modbus (Slave ID)",
+          "wiring_system": "Tipo di impianto elettrico",
+          "scan_interval": "Intervallo di aggiornamento (secondi)"
+        }
+      },
+      "rtu": {
+        "title": "Connessione Modbus RTU (RS-485 Seriale)",
+        "description": "Inserisci i parametri della porta seriale RS-485 collegata al CVM-E3-MINI.",
+        "data": {
+          "serial_port": "Porta Seriale (es. /dev/ttyUSB0)",
+          "baudrate": "Baudrate",
+          "parity": "Parità",
+          "stopbits": "Bit di stop",
+          "slave_id": "Indirizzo Periferico Modbus (Slave ID)",
+          "wiring_system": "Tipo di impianto elettrico",
+          "scan_interval": "Intervallo di aggiornamento (secondi)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossibile connettersi al dispositivo Modbus",
+      "unknown": "Errore imprevisto"
+    },
+    "abort": {
+      "already_configured": "Questo dispositivo Circutor CVM-E3-MINI è già configurato"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni Circutor CVM-E3-MINI",
+        "description": "Modifica i parametri operativi dell'integrazione.",
+        "data": {
+          "scan_interval": "Intervallo di aggiornamento (secondi)",
+          "wiring_system": "Tipo di impianto elettrico"
+        }
+      }
+    }
+  }
+}

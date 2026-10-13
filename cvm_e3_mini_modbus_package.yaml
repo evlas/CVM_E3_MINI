@@ -1,0 +1,279 @@
+# ==============================================================================
+# Circutor CVM-E3-MINI - Native Home Assistant Modbus Package
+# ==============================================================================
+# Se preferisci usare l'integrazione nativa 'modbus' di Home Assistant invece
+# del Custom Component, copia questo file nella cartella config/packages/
+#
+# Nota sugli indirizzi:
+# Questa configurazione utilizza il MAPA 2 (consigliato da Circutor a pag. 88).
+# Gli indirizzi esadecimali sono stati convertiti in decimale:
+# 0x1000 = 4096, 0x1030 = 4144, 0x10DC = 4316, ecc.
+# ==============================================================================
+
+modbus:
+  - name: cvm_e3_mini_hub
+    type: tcp
+    host: 192.168.1.150   # Sostituisci con l'IP del tuo CVM-E3-MINI-WiEth o Gateway
+    port: 502
+    timeout: 2
+    delay: 1
+
+    # Per connessione seriale RS-485 (decommentare e commentare le righe TCP sopra):
+    # type: serial
+    # port: /dev/ttyUSB0
+    # baudrate: 19200
+    # bytesize: 8
+    # parity: N
+    # stopbits: 1
+
+    sensors:
+      # --- TENSIONI DI FASE ---
+      - name: "CVM-E3-MINI Tensione L1"
+        unique_id: cvm_e3_mini_v_l1
+        address: 4096 # 0x1000
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Tensione L2"
+        unique_id: cvm_e3_mini_v_l2
+        address: 4112 # 0x1010
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Tensione L3"
+        unique_id: cvm_e3_mini_v_l3
+        address: 4128 # 0x1020
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      # --- TENSIONI CONCATENATE ---
+      - name: "CVM-E3-MINI Tensione L1-L2"
+        unique_id: cvm_e3_mini_v_l12
+        address: 4158 # 0x103E
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Tensione L2-L3"
+        unique_id: cvm_e3_mini_v_l23
+        address: 4160 # 0x1040
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Tensione L3-L1"
+        unique_id: cvm_e3_mini_v_l31
+        address: 4162 # 0x1042
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      # --- CORRENTI ---
+      - name: "CVM-E3-MINI Corrente L1"
+        unique_id: cvm_e3_mini_i_l1
+        address: 4098 # 0x1002
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Corrente L2"
+        unique_id: cvm_e3_mini_i_l2
+        address: 4114 # 0x1012
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Corrente L3"
+        unique_id: cvm_e3_mini_i_l3
+        address: 4130 # 0x1022
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Corrente Neutro"
+        unique_id: cvm_e3_mini_i_n
+        address: 4164 # 0x1044
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 10
+
+      # --- POTENZE ATTIVE (Signed 32-bit: negativo in generazione) ---
+      - name: "CVM-E3-MINI Potenza Attiva Totale"
+        unique_id: cvm_e3_mini_p_tot
+        address: 4144 # 0x1030
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 1
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 5
+
+      - name: "CVM-E3-MINI Potenza Attiva L1"
+        unique_id: cvm_e3_mini_p_l1
+        address: 4100 # 0x1004
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 1
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Potenza Attiva L2"
+        unique_id: cvm_e3_mini_p_l2
+        address: 4116 # 0x1014
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 1
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Potenza Attiva L3"
+        unique_id: cvm_e3_mini_p_l3
+        address: 4132 # 0x1024
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 1
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 10
+
+      # --- FREQUENZA E FATTORE DI POTENZA ---
+      - name: "CVM-E3-MINI Frequenza"
+        unique_id: cvm_e3_mini_freq
+        address: 4156 # 0x103C
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.01
+        precision: 2
+        unit_of_measurement: "Hz"
+        device_class: frequency
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Fattore di Potenza Totale"
+        unique_id: cvm_e3_mini_pf_tot
+        address: 4152 # 0x1038
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 0.01
+        precision: 2
+        device_class: power_factor
+        state_class: measurement
+        scan_interval: 10
+
+      # --- ENERGIE TOTALI (Compatibili Energy Dashboard) ---
+      - name: "CVM-E3-MINI Energia Attiva Consumata Totale"
+        unique_id: cvm_e3_mini_energy_consumed_tot
+        address: 4316 # 0x10DC
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 1
+        precision: 1
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 30
+
+      - name: "CVM-E3-MINI Energia Attiva Generata Totale"
+        unique_id: cvm_e3_mini_energy_generated_tot
+        address: 4336 # 0x10F0
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 1
+        precision: 1
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 30
+
+      - name: "CVM-E3-MINI Energia Reattiva Induttiva Consumata"
+        unique_id: cvm_e3_mini_energy_q_ind_tot
+        address: 4320 # 0x10E0
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 1
+        precision: 1
+        unit_of_measurement: "kvarh"
+        state_class: total_increasing
+        scan_interval: 30

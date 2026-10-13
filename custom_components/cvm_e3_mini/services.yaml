@@ -1,0 +1,65 @@
+reset_maximums:
+  name: Azzera Valori Massimi
+  description: Azzera tutti i valori di picco massimo registrati dall'analizzatore di rete Circutor CVM-E3-MINI.
+
+reset_minimums:
+  name: Azzera Valori Minimi
+  description: Azzera tutti i valori minimi registrati dall'analizzatore di rete Circutor CVM-E3-MINI.
+
+reset_max_demand:
+  name: Azzera Massima Richiesta (Max Demand)
+  description: Inizializza e azzera i registri della massima richiesta (kW e kVA).
+
+reset_energy_counters:
+  name: Azzera Contatori Energia
+  description: Azzera i contatori di energia (attiva, reattiva, apparente).
+  fields:
+    include_phase_energies:
+      name: Includi energie per singola fase
+      description: Se abilitato, azzera sia le energie trifase che quelle per singola fase (L1, L2, L3).
+      required: false
+      default: true
+      selector:
+        boolean: {}
+
+reset_pulse_counter:
+  name: Azzera Contatore Impulsi
+  description: Azzera il contatore di impulsi dell'ingresso digitale.
+
+reset_all:
+  name: Reset Totale Parametri
+  description: Esegue il reset di tutti i contatori, massimi, minimi e massima richiesta contemporaneamente.
+
+set_tariff:
+  name: Imposta Tariffa Attiva
+  description: Seleziona la tariffa attiva (Tariffa 1 o Tariffa 2).
+  fields:
+    tariff:
+      name: Tariffa
+      description: Numero della tariffa da attivare (1 o 2).
+      required: true
+      default: 1
+      selector:
+        select:
+          options:
+            - label: Tariffa 1
+              value: 1
+            - label: Tariffa 2
+              value: 2
+
+set_backlight:
+  name: Imposta Retroilluminazione Display
+  description: Configura la modalità di retroilluminazione del display (Sempre Acceso o Temporizzato).
+  fields:
+    mode:
+      name: Modalità
+      description: Modalità desiderata per la retroilluminazione.
+      required: true
+      default: always_on
+      selector:
+        select:
+          options:
+            - label: Sempre Acceso (Always On)
+              value: always_on
+            - label: Temporizzato (Timed)
+              value: timed
