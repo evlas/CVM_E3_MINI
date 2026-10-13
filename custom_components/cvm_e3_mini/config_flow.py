@@ -78,37 +78,49 @@ async def _read_reg_universal(
 
     # 1. Modern PyModbus >= 3.8.3 / 3.10+ uses device_id
     try:
-        return await method(reg, count, device_id=slave_id)
+        return await method(reg, count=count, device_id=slave_id)
     except TypeError:
-        pass
+        try:
+            return await method(reg, count, device_id=slave_id)
+        except TypeError:
+            pass
     except Exception as ex:
         _LOGGER.debug("read with device_id error at %s: %s", hex(reg), ex)
-        return None
 
     # 2. PyModbus 3.0 - 3.8 uses slave
     try:
-        return await method(reg, count, slave=slave_id)
+        return await method(reg, count=count, slave=slave_id)
     except TypeError:
-        pass
+        try:
+            return await method(reg, count, slave=slave_id)
+        except TypeError:
+            pass
     except Exception as ex:
         _LOGGER.debug("read with slave error at %s: %s", hex(reg), ex)
-        return None
 
     # 3. Legacy PyModbus 2.x uses unit
     try:
-        return await method(reg, count, unit=slave_id)
+        return await method(reg, count=count, unit=slave_id)
     except TypeError:
-        pass
+        try:
+            return await method(reg, count, unit=slave_id)
+        except TypeError:
+            pass
     except Exception as ex:
         _LOGGER.debug("read with unit error at %s: %s", hex(reg), ex)
-        return None
 
     # 4. Fallback without target id
     try:
-        return await method(reg, count)
+        return await method(reg, count=count)
+    except TypeError:
+        try:
+            return await method(reg, count)
+        except Exception as ex:
+            _LOGGER.debug("read fallback error at %s: %s", hex(reg), ex)
     except Exception as ex:
         _LOGGER.debug("read fallback error at %s: %s", hex(reg), ex)
-        return None
+
+    return None
 
 
 async def _test_tcp_connection(
@@ -124,23 +136,35 @@ async def _test_tcp_connection(
     framers_to_try.append(alt_framer)
 
     for current_framer in framers_to_try:
-        framer_cls = (
-            ModbusRtuFramer
-            if (current_framer == FRAMER_RTU and ModbusRtuFramer is not None)
-            else ModbusSocketFramer
-        )
         kwargs: dict[str, Any] = {
             "host": host,
             "port": port,
             "timeout": timeout,
         }
-        if framer_cls is not None:
-            kwargs["framer"] = framer_cls
+        if current_framer == FRAMER_RTU and ModbusRtuFramer is not None:
+            kwargs["framer"] = ModbusRtuFramer
 
         client = AsyncModbusTcpClient(**kwargs)
         try:
-            connected = await client.connect()
+            try:
+                connected = await client.connect()
+            except Exception as conn_err:
+                _LOGGER.warning(
+                    "TCP connection to %s:%s (framer: %s) failed: %s",
+                    host,
+                    port,
+                    current_framer,
+                    conn_err,
+                )
+                continue
+
             if not connected and not getattr(client, "connected", False):
+                _LOGGER.warning(
+                    "TCP socket to %s:%s could not be opened (framer: %s)",
+                    host,
+                    port,
+                    current_framer,
+                )
                 continue
 
             # Try reading registers at 0x1000 (Mapa 2 V1), 0x0000 (Mapa 1 V1), or 0x05AA (Serial)
@@ -159,10 +183,25 @@ async def _test_tcp_connection(
                     break
 
             if success:
+                _LOGGER.info(
+                    "Connection to CVM-E3-MINI at %s:%s successfully verified (framer: %s, slave: %s)",
+                    host,
+                    port,
+                    current_framer,
+                    slave_id,
+                )
                 return True, current_framer
 
+            _LOGGER.warning(
+                "Connected to %s:%s, but meter did not answer on slave ID %s (framer: %s)",
+                host,
+                port,
+                slave_id,
+                current_framer,
+            )
+
         except Exception as err:
-            _LOGGER.debug("Modbus TCP test with framer %s failed: %s", current_framer, err)
+            _LOGGER.warning("Modbus TCP test with framer %s failed: %s", current_framer, err)
         finally:
             try:
                 client.close()
@@ -264,27 +303,32 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
 
+            ignore_test = bool(user_input.get("ignore_test", False))
+
             # Connection test
             success, detected_framer = await _test_tcp_connection(
                 host, port, slave_id, timeout, framer_type
             )
-            if not success:
+            if not success and not ignore_test:
                 _LOGGER.warning(
-                    "Could not reach CVM-E3-MINI at %s:%s (slave ID: %s)",
+                    "Could not reach CVM-E3-MINI at %s:%s (slave ID: %s, framer: %s). Check IP, port, Slave ID, or check 'ignore_test' to proceed anyway.",
                     host,
                     port,
                     slave_id,
+                    framer_type,
                 )
                 errors["base"] = "cannot_connect"
             else:
+                final_framer = detected_framer if success else framer_type
+                clean_input = {k: v for k, v in user_input.items() if k != "ignore_test"}
                 data = {
                     CONF_CONNECTION_TYPE: CONN_TYPE_TCP,
-                    **user_input,
+                    **clean_input,
                     CONF_HOST: host,
                     CONF_PORT: port,
                     CONF_SLAVE_ID: slave_id,
                     CONF_TIMEOUT: timeout,
-                    CONF_FRAMER: detected_framer,
+                    CONF_FRAMER: final_framer,
                 }
                 title = f"{DEFAULT_NAME} ({host}:{port})"
                 return self.async_create_entry(title=title, data=data)
@@ -332,6 +376,7 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         mode=NumberSelectorMode.BOX,
                     )
                 ),
+                vol.Optional("ignore_test", default=False): bool,
             }
         )
 
@@ -348,6 +393,7 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             stopbits = int(user_input[CONF_STOPBITS])
             slave_id = int(user_input[CONF_SLAVE_ID])
             timeout = float(user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))
+            ignore_test = bool(user_input.get("ignore_test", False))
 
             unique_id = f"cvm_e3_mini_{serial_port}_{slave_id}"
             await self.async_set_unique_id(unique_id)
@@ -356,17 +402,18 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             success = await _test_rtu_connection(
                 serial_port, baudrate, parity, stopbits, slave_id, timeout
             )
-            if not success:
+            if not success and not ignore_test:
                 _LOGGER.warning(
-                    "Could not reach CVM-E3-MINI on %s (slave ID: %s)",
+                    "Could not reach CVM-E3-MINI on %s (slave ID: %s). Check connection or check 'ignore_test' to proceed anyway.",
                     serial_port,
                     slave_id,
                 )
                 errors["base"] = "cannot_connect"
             else:
+                clean_input = {k: v for k, v in user_input.items() if k != "ignore_test"}
                 data = {
                     CONF_CONNECTION_TYPE: CONN_TYPE_RTU,
-                    **user_input,
+                    **clean_input,
                     CONF_SERIAL_PORT: serial_port,
                     CONF_BAUDRATE: baudrate,
                     CONF_STOPBITS: stopbits,
@@ -419,6 +466,7 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         mode=NumberSelectorMode.BOX,
                     )
                 ),
+                vol.Optional("ignore_test", default=False): bool,
             }
         )
 

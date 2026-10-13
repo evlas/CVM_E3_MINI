@@ -18,7 +18,8 @@
           "framer": "TCP Protocol Type / Gateway",
           "wiring_system": "Electrical wiring system",
           "scan_interval": "Update interval (seconds)",
-          "timeout": "Response timeout (seconds)"
+          "timeout": "Response timeout (seconds)",
+          "ignore_test": "Ignore connection test and add device anyway"
         }
       },
       "rtu": {
@@ -32,7 +33,8 @@
           "slave_id": "Modbus Unit / Slave ID",
           "wiring_system": "Electrical wiring system",
           "scan_interval": "Update interval (seconds)",
-          "timeout": "Response timeout (seconds)"
+          "timeout": "Response timeout (seconds)",
+          "ignore_test": "Ignore connection test and add device anyway"
         }
       }
     },

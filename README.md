@@ -20,20 +20,26 @@ Basata sulle specifiche ufficiali del manuale d'istruzioni **Circutor M170B01-01
   - Cadenza inter-frame $\ge 100\text{ ms}$ e timeout per garantire stabilità con firmware $\ge \text{v}2.xx$.
 - **Integrazione nativa con la Dashboard Energia di Home Assistant**:
   - Contatori di energia attiva consumata (prelievo) e generata (immissione/fotovoltaico) con `device_class: energy` e `state_class: total_increasing`.
-- **Monitoraggio Completo**:
-  - Tensioni di fase ($V_{L1}, V_{L2}, V_{L3}$) e concatenate ($V_{12}, V_{23}, V_{31}$).
-  - Correnti di linea ($I_{L1}, I_{L2}, I_{L3}$) e corrente di Neutro ($I_N$).
-  - Potenze attive, reattive (induttiva e capacitiva) e apparenti (totali e per singola fase).
-  - Fattore di potenza ($PF$) e $\cos \varphi$.
-  - Frequenza di rete ($Hz$).
-  - Distorsione armonica totale (% THD Tensione e Corrente per ogni fase).
-  - Picchi di massima richiesta (Max Demand).
-  - Ore di funzionamento, emissioni di $\text{CO}_2$ e costi stimati.
-- **Sensori Binari di Stato**:
-  - Stato dell'ingresso digitale (Input logico).
+  - Risoluzione standard (kWh, kvarh, kVAh) e ad alta risoluzione (Wh, varh, VAh) sia per energia consumata che generata.
+- **Monitoraggio Completo (Istantanei, Massimi e Minimi)**:
+  - Tensioni di fase ($V_{L1}, V_{L2}, V_{L3}$) e concatenate ($V_{12}, V_{23}, V_{31}$) con relativi valori Minimi e Massimi.
+  - Correnti di linea ($I_{L1}, I_{L2}, I_{L3}$) e corrente di Neutro ($I_N$) con Minimi e Massimi.
+  - Potenze attive, reattive (induttiva e capacitiva) e apparenti (totali e per singola fase) con Minimi e Massimi.
+  - Fattore di potenza ($PF$) e $\cos \varphi$ con Minimi e Massimi.
+  - Frequenza di rete ($Hz$) con Minimo e Massimo.
+  - Distorsione armonica totale (% THD Tensione e Corrente per ogni fase) con Minimi e Massimi.
+  - Picchi di massima richiesta (Max Demand kW, kVA, kvarL, kvarC, Correnti L1/L2/L3) con relativi picchi storici massimi.
+  - Temperatura interna dello strumento (°C) con Minimo e Massimo.
+  - Ore di funzionamento, emissioni di $\text{CO}_2$ e costi/valori economici stimati.
+- **Spettro Armonico Completo (Armoniche 2°..31°)**:
+  - Tensione Fondamentale e armoniche dalla 2ª alla 31ª per L1, L2, L3 (% rispetto alla fondamentale).
+  - Corrente Fondamentale e armoniche dalla 2ª alla 31ª per L1, L2, L3 (% rispetto alla fondamentale).
+- **Sensori Binari di Stato e Diagnostica**:
+  - Stato dell'ingresso digitale (Input logico) e contatore impulsi (Uint64).
   - Stato dell'uscita digitale (Relè / Allarme).
-  - **Rilevamento errore sequenza fasi** (`binary_sensor` con classe `problem`).
-  - Quadrante di lavoro (Consumo/Generazione, Induttivo/Capacitivo).
+  - **Rilevamento errore sequenza fasi** (`binary_sensor` con classe `problem`, registro `0x07D5`).
+  - Quadrante operativo di lavoro a 4 quadranti (Consumo/Generazione, Induttivo/Capacitivo, registro `0x07D1`).
+  - Lettura matricola / numero di serie hardware univoco da registro `0x05AA`.
 - **Controllo e Reset direttamente dalla WebUI**:
   - **Pulsanti (Button entities)**:
     - 🔄 *Azzera Valori Massimi*

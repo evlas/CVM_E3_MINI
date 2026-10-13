@@ -18,7 +18,8 @@
           "framer": "Tipo di protocollo TCP / Gateway",
           "wiring_system": "Tipo di impianto elettrico",
           "scan_interval": "Intervallo di aggiornamento (secondi)",
-          "timeout": "Timeout di risposta (secondi)"
+          "timeout": "Timeout di risposta (secondi)",
+          "ignore_test": "Ignora test ed aggiungi comunque il dispositivo"
         }
       },
       "rtu": {
@@ -32,7 +33,8 @@
           "slave_id": "Indirizzo Periferico Modbus (Slave ID)",
           "wiring_system": "Tipo di impianto elettrico",
           "scan_interval": "Intervallo di aggiornamento (secondi)",
-          "timeout": "Timeout di risposta (secondi)"
+          "timeout": "Timeout di risposta (secondi)",
+          "ignore_test": "Ignora test ed aggiungi comunque il dispositivo"
         }
       }
     },

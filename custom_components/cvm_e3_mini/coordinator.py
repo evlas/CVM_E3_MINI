@@ -37,6 +37,7 @@ from .const import (
     CONF_SLAVE_ID,
     CONF_STOPBITS,
     CONF_TIMEOUT,
+    CONF_WIRING_SYSTEM,
     CONN_TYPE_TCP,
     DEFAULT_FRAMER,
     DEFAULT_PORT,
@@ -51,6 +52,8 @@ from .const import (
     REG_POWER_STATUS,
     REG_PULSE_COUNTER_START,
     REG_SERIAL_NUMBER_START,
+    WIRING_3P4W,
+    WIRING_3P3W,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -69,6 +72,73 @@ def _decode_u32(r0: int, r1: int) -> int:
 def _decode_u64(r0: int, r1: int, r2: int, r3: int) -> int:
     """Decode four 16-bit registers as unsigned 64-bit big-endian integer."""
     return struct.unpack(">Q", struct.pack(">HHHH", r0, r1, r2, r3))[0]
+
+
+def _decode_30_vars(b: list[int], suffix: str, data: dict[str, Any]) -> None:
+    """Decode 30 variables block (60 registers) for Max or Min."""
+    data[f"voltage_l1_{suffix}"] = _decode_u32(b[0], b[1]) / 10.0
+    data[f"current_l1_{suffix}"] = _decode_u32(b[2], b[3]) / 1000.0
+    data[f"power_active_l1_{suffix}"] = _decode_s32(b[4], b[5])
+    data[f"power_reactive_ind_l1_{suffix}"] = _decode_s32(b[6], b[7])
+    data[f"power_reactive_cap_l1_{suffix}"] = _decode_s32(b[8], b[9])
+    data[f"power_apparent_l1_{suffix}"] = _decode_u32(b[10], b[11])
+    data[f"power_factor_l1_{suffix}"] = _decode_s32(b[12], b[13]) / 100.0
+    data[f"cos_phi_l1_{suffix}"] = _decode_s32(b[14], b[15]) / 100.0
+
+    data[f"voltage_l2_{suffix}"] = _decode_u32(b[16], b[17]) / 10.0
+    data[f"current_l2_{suffix}"] = _decode_u32(b[18], b[19]) / 1000.0
+    data[f"power_active_l2_{suffix}"] = _decode_s32(b[20], b[21])
+    data[f"power_reactive_ind_l2_{suffix}"] = _decode_s32(b[22], b[23])
+    data[f"power_reactive_cap_l2_{suffix}"] = _decode_s32(b[24], b[25])
+    data[f"power_apparent_l2_{suffix}"] = _decode_u32(b[26], b[27])
+    data[f"power_factor_l2_{suffix}"] = _decode_s32(b[28], b[29]) / 100.0
+    data[f"cos_phi_l2_{suffix}"] = _decode_s32(b[30], b[31]) / 100.0
+
+    data[f"voltage_l3_{suffix}"] = _decode_u32(b[32], b[33]) / 10.0
+    data[f"current_l3_{suffix}"] = _decode_u32(b[34], b[35]) / 1000.0
+    data[f"power_active_l3_{suffix}"] = _decode_s32(b[36], b[37])
+    data[f"power_reactive_ind_l3_{suffix}"] = _decode_s32(b[38], b[39])
+    data[f"power_reactive_cap_l3_{suffix}"] = _decode_s32(b[40], b[41])
+    data[f"power_apparent_l3_{suffix}"] = _decode_u32(b[42], b[43])
+    data[f"power_factor_l3_{suffix}"] = _decode_s32(b[44], b[45]) / 100.0
+    data[f"cos_phi_l3_{suffix}"] = _decode_s32(b[46], b[47]) / 100.0
+
+    data[f"power_active_total_{suffix}"] = _decode_s32(b[48], b[49])
+    data[f"power_reactive_ind_total_{suffix}"] = _decode_s32(b[50], b[51])
+    data[f"power_reactive_cap_total_{suffix}"] = _decode_s32(b[52], b[53])
+    data[f"power_apparent_total_{suffix}"] = _decode_u32(b[54], b[55])
+    data[f"power_factor_total_{suffix}"] = _decode_s32(b[56], b[57]) / 100.0
+    data[f"cos_phi_total_{suffix}"] = _decode_s32(b[58], b[59]) / 100.0
+
+
+def _decode_11_vars(b: list[int], suffix: str, data: dict[str, Any]) -> None:
+    """Decode 11 variables block (22 registers) for Max or Min."""
+    data[f"frequency_{suffix}"] = _decode_u32(b[0], b[1]) / 100.0
+    data[f"voltage_l1_l2_{suffix}"] = _decode_u32(b[2], b[3]) / 10.0
+    data[f"voltage_l2_l3_{suffix}"] = _decode_u32(b[4], b[5]) / 10.0
+    data[f"voltage_l3_l1_{suffix}"] = _decode_u32(b[6], b[7]) / 10.0
+    data[f"current_neutral_{suffix}"] = _decode_u32(b[8], b[9]) / 1000.0
+    data[f"thd_voltage_l1_{suffix}"] = _decode_u32(b[10], b[11]) / 10.0
+    data[f"thd_voltage_l2_{suffix}"] = _decode_u32(b[12], b[13]) / 10.0
+    data[f"thd_voltage_l3_{suffix}"] = _decode_u32(b[14], b[15]) / 10.0
+    data[f"thd_current_l1_{suffix}"] = _decode_u32(b[16], b[17]) / 10.0
+    data[f"thd_current_l2_{suffix}"] = _decode_u32(b[18], b[19]) / 10.0
+    data[f"thd_current_l3_{suffix}"] = _decode_u32(b[20], b[21]) / 10.0
+
+
+def _decode_harmonics_voltage(b: list[int], phase: str, data: dict[str, Any]) -> None:
+    """Decode voltage harmonics (fundamental + 2nd..31st)."""
+    data[f"voltage_fundamental_{phase}"] = _decode_u32(b[0], b[1]) / 10.0
+    for h in range(2, 32):
+        # Index in buffer is h (h=2 is at index 2, h=31 is at index 31)
+        data[f"harmonic_v_{phase}_h{h}"] = b[h] / 10.0
+
+
+def _decode_harmonics_current(b: list[int], phase: str, data: dict[str, Any]) -> None:
+    """Decode current harmonics (fundamental + 2nd..31st)."""
+    data[f"current_fundamental_{phase}"] = _decode_u32(b[0], b[1]) / 1000.0
+    for h in range(2, 32):
+        data[f"harmonic_i_{phase}_h{h}"] = b[h] / 10.0
 
 
 class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -103,18 +173,13 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             host = self.entry_data[CONF_HOST]
             port = int(self.entry_data.get(CONF_PORT, DEFAULT_PORT))
             framer_type = self.entry_data.get(CONF_FRAMER, DEFAULT_FRAMER)
-            framer_cls = (
-                ModbusRtuFramer
-                if (framer_type == FRAMER_RTU and ModbusRtuFramer is not None)
-                else ModbusSocketFramer
-            )
             kwargs: dict[str, Any] = {
                 "host": host,
                 "port": port,
                 "timeout": self.timeout,
             }
-            if framer_cls is not None:
-                kwargs["framer"] = framer_cls
+            if framer_type == FRAMER_RTU and ModbusRtuFramer is not None:
+                kwargs["framer"] = ModbusRtuFramer
             return AsyncModbusTcpClient(**kwargs)
 
         # Serial / RTU
@@ -178,7 +243,6 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             pass
         except Exception as ex:
             _LOGGER.debug("%s with device_id error: %s", method_name, ex)
-            return None
 
         # 2. PyModbus 3.0 - 3.8 (slave)
         try:
@@ -187,7 +251,6 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             pass
         except Exception as ex:
             _LOGGER.debug("%s with slave error: %s", method_name, ex)
-            return None
 
         # 3. Legacy PyModbus 2.x (unit)
         try:
@@ -196,7 +259,6 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             pass
         except Exception as ex:
             _LOGGER.debug("%s with unit error: %s", method_name, ex)
-            return None
 
         # 4. Fallback without target device identifier
         try:
@@ -207,11 +269,11 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _exec_read_holding(self, address: int, count: int) -> Any:
         """Attempt reading holding registers (0x03)."""
-        return await self._call_client_method("read_holding_registers", address, count)
+        return await self._call_client_method("read_holding_registers", address, count=count)
 
     async def _exec_read_input(self, address: int, count: int) -> Any:
         """Attempt reading input registers (0x04)."""
-        return await self._call_client_method("read_input_registers", address, count)
+        return await self._call_client_method("read_input_registers", address, count=count)
 
     async def _read_registers(
         self,
@@ -372,6 +434,17 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["max_demand_current_l3"] = _decode_u32(b2[40], b2[41]) / 1000.0
 
                 # -------------------------------------------------------------
+                # BLOCK 2b: Reactive Max Demands (0x1200 - 0x1203)
+                # -------------------------------------------------------------
+                try:
+                    b2b = await self._read_registers(0x1200, 4)
+                    await asyncio.sleep(0.05)
+                    data["max_demand_reactive_ind_power"] = _decode_s32(b2b[0], b2b[1])
+                    data["max_demand_reactive_cap_power"] = _decode_s32(b2b[2], b2b[3])
+                except Exception as err:
+                    _LOGGER.debug("Could not read reactive max demand registers: %s", err)
+
+                # -------------------------------------------------------------
                 # BLOCK 3: Total Energies (0x10DC - 0x1105)
                 # 42 registers = 21 variables
                 # -------------------------------------------------------------
@@ -381,22 +454,115 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["energy_active_consumed_total"] = _decode_u32(b3[0], b3[1])  # kWh
                 data["energy_active_consumed_wh_total"] = _decode_u32(b3[2], b3[3])  # Wh
                 data["energy_reactive_ind_consumed_total"] = _decode_u32(b3[4], b3[5])  # kvarh
+                data["energy_reactive_ind_consumed_varh_total"] = _decode_u32(b3[6], b3[7])  # varh
                 data["energy_reactive_cap_consumed_total"] = _decode_u32(b3[8], b3[9])  # kvarh
+                data["energy_reactive_cap_consumed_varh_total"] = _decode_u32(b3[10], b3[11])  # varh
                 data["energy_apparent_consumed_total"] = _decode_u32(b3[12], b3[13])  # kVAh
+                data["energy_apparent_consumed_vah_total"] = _decode_u32(b3[14], b3[15])  # VAh
                 data["co2_consumed_total"] = _decode_u32(b3[16], b3[17]) / 10.0  # kg
                 data["cost_consumed_total"] = _decode_u32(b3[18], b3[19]) / 10.0
 
                 data["energy_active_generated_total"] = _decode_u32(b3[20], b3[21])  # kWh
                 data["energy_active_generated_wh_total"] = _decode_u32(b3[22], b3[23])  # Wh
                 data["energy_reactive_ind_generated_total"] = _decode_u32(b3[24], b3[25])  # kvarh
+                data["energy_reactive_ind_generated_varh_total"] = _decode_u32(b3[26], b3[27])  # varh
                 data["energy_reactive_cap_generated_total"] = _decode_u32(b3[28], b3[29])  # kvarh
+                data["energy_reactive_cap_generated_varh_total"] = _decode_u32(b3[30], b3[31])  # varh
                 data["energy_apparent_generated_total"] = _decode_u32(b3[32], b3[33])  # kVAh
+                data["energy_apparent_generated_vah_total"] = _decode_u32(b3[34], b3[35])  # VAh
                 data["co2_generated_total"] = _decode_u32(b3[36], b3[37]) / 10.0  # kg
                 data["cost_generated_total"] = _decode_u32(b3[38], b3[39]) / 10.0
                 data["operating_hours_total"] = _decode_u32(b3[40], b3[41]) / 3600.0  # converted to hours
 
                 # -------------------------------------------------------------
-                # BLOCK 4: Status and Digital I/O
+                # BLOCK 4: Maxima (0x1106 - 0x1163, 0x1204 - 0x1207)
+                # -------------------------------------------------------------
+                try:
+                    b_max1 = await self._read_registers(0x1106, 60)
+                    _decode_30_vars(b_max1, "max", data)
+                    await asyncio.sleep(0.05)
+
+                    b_max2 = await self._read_registers(0x1142, 34)
+                    _decode_11_vars(b_max2[:22], "max", data)
+                    data["max_demand_active_power_max"] = _decode_s32(b_max2[22], b_max2[23])
+                    data["max_demand_apparent_power_max"] = _decode_u32(b_max2[24], b_max2[25])
+                    data["max_demand_current_l1_max"] = _decode_u32(b_max2[28], b_max2[29]) / 1000.0
+                    data["max_demand_current_l2_max"] = _decode_u32(b_max2[30], b_max2[31]) / 1000.0
+                    data["max_demand_current_l3_max"] = _decode_u32(b_max2[32], b_max2[33]) / 1000.0
+                    await asyncio.sleep(0.05)
+
+                    b_max3 = await self._read_registers(0x1204, 4)
+                    data["max_demand_reactive_ind_power_max"] = _decode_s32(b_max3[0], b_max3[1])
+                    data["max_demand_reactive_cap_power_max"] = _decode_s32(b_max3[2], b_max3[3])
+                    await asyncio.sleep(0.05)
+                except Exception as err:
+                    _LOGGER.debug("Could not read maximum values: %s", err)
+
+                # -------------------------------------------------------------
+                # BLOCK 5: Minima (0x1164 - 0x11B5)
+                # -------------------------------------------------------------
+                try:
+                    b_min1 = await self._read_registers(0x1164, 60)
+                    _decode_30_vars(b_min1, "min", data)
+                    await asyncio.sleep(0.05)
+
+                    b_min2 = await self._read_registers(0x11A0, 22)
+                    _decode_11_vars(b_min2, "min", data)
+                    await asyncio.sleep(0.05)
+                except Exception as err:
+                    _LOGGER.debug("Could not read minimum values: %s", err)
+
+                # -------------------------------------------------------------
+                # BLOCK 6: Harmonics (0x1A28 - 0x1AE7)
+                # -------------------------------------------------------------
+                try:
+                    wiring = self.entry_data.get(CONF_WIRING_SYSTEM, WIRING_3P4W)
+                    # L1 Harmonics (32 registers each)
+                    b_vh1 = await self._read_registers(0x1A28, 32)
+                    _decode_harmonics_voltage(b_vh1, "l1", data)
+                    await asyncio.sleep(0.05)
+
+                    b_ih1 = await self._read_registers(0x1A88, 32)
+                    _decode_harmonics_current(b_ih1, "l1", data)
+                    await asyncio.sleep(0.05)
+
+                    if wiring in (WIRING_3P4W, WIRING_3P3W):
+                        # L2 Harmonics
+                        b_vh2 = await self._read_registers(0x1A48, 32)
+                        _decode_harmonics_voltage(b_vh2, "l2", data)
+                        await asyncio.sleep(0.05)
+
+                        b_ih2 = await self._read_registers(0x1AA8, 32)
+                        _decode_harmonics_current(b_ih2, "l2", data)
+                        await asyncio.sleep(0.05)
+
+                        # L3 Harmonics
+                        b_vh3 = await self._read_registers(0x1A68, 32)
+                        _decode_harmonics_voltage(b_vh3, "l3", data)
+                        await asyncio.sleep(0.05)
+
+                        b_ih3 = await self._read_registers(0x1AC8, 32)
+                        _decode_harmonics_current(b_ih3, "l3", data)
+                        await asyncio.sleep(0.05)
+                except Exception as err:
+                    _LOGGER.debug("Could not read harmonic registers: %s", err)
+
+                # -------------------------------------------------------------
+                # Internal Temperature (M1 0x0050, 0x00B0, 0x0110)
+                # -------------------------------------------------------------
+                try:
+                    temp_inst = await self._read_registers(0x0050, 2)
+                    data["internal_temperature"] = _decode_s32(temp_inst[0], temp_inst[1]) / 10.0
+                    temp_max = await self._read_registers(0x00B0, 2)
+                    data["internal_temperature_max"] = _decode_s32(temp_max[0], temp_max[1]) / 10.0
+                    temp_min = await self._read_registers(0x0110, 2)
+                    data["internal_temperature_min"] = _decode_s32(temp_min[0], temp_min[1]) / 10.0
+                    await asyncio.sleep(0.05)
+                except Exception as err:
+                    _LOGGER.debug("Could not read internal temperature registers: %s", err)
+
+                # -------------------------------------------------------------
+                # BLOCK 7: Status and Digital I/O
                 # -------------------------------------------------------------
                 try:
                     status_regs = await self._read_registers(REG_POWER_STATUS, 5)
