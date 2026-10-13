@@ -1,0 +1,73 @@
+name: CI & Release (Forgejo)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: docker
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+        continue-on-error: true
+
+      - name: Validate Python and JSON Files
+        run: |
+          python3 -m py_compile custom_components/cvm_e3_mini/*.py
+          python3 -c "import json; [json.load(open(f)) for f in ['hacs.json', 'custom_components/cvm_e3_mini/manifest.json', 'custom_components/cvm_e3_mini/strings.json', 'custom_components/cvm_e3_mini/translations/en.json', 'custom_components/cvm_e3_mini/translations/it.json']]"
+          echo "Tutti i file Python e JSON sono validi!"
+
+  release:
+    name: Release Custom Component
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: validate
+    runs-on: docker
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Zip Archive
+        run: |
+          which zip || (apt-get update && apt-get install -y zip)
+          zip -r cvm_e3_mini.zip custom_components/cvm_e3_mini
+
+      - name: Publish to Forgejo Releases
+        env:
+          FORGEJO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          echo "Creazione Release Forgejo per il tag: ${TAG_NAME}"
+
+          CREATE_RESP=$(curl -s -f -X POST "${{ github.api_url }}/repos/${{ github.repository }}/releases" \
+            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"tag_name\": \"${TAG_NAME}\",
+              \"name\": \"Release ${TAG_NAME}\",
+              \"draft\": false,
+              \"prerelease\": false
+            }")
+
+          RELEASE_ID=$(echo "${CREATE_RESP}" | grep -oP '"id":\s*\K[0-9]+' | head -n 1)
+          echo "Release creata con ID: ${RELEASE_ID}"
+
+          echo "Caricamento archivio cvm_e3_mini.zip..."
+          curl -s -f -X POST "${{ github.api_url }}/repos/${{ github.repository }}/releases/${RELEASE_ID}/assets?name=cvm_e3_mini.zip" \
+            -H "Authorization: token ${FORGEJO_TOKEN}" \
+            -H "Content-Type: application/zip" \
+            --data-binary @cvm_e3_mini.zip
+
+          echo "Rilascio Forgejo completato con successo."
