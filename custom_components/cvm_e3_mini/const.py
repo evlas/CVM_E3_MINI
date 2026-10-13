@@ -18,6 +18,7 @@ CONF_BYTESIZE = "bytesize"
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_TIMEOUT = "timeout"
 CONF_WIRING_SYSTEM = "wiring_system"
+CONF_FRAMER = "framer"
 
 # Defaults
 DEFAULT_NAME = "Circutor CVM-E3-MINI"
@@ -28,7 +29,10 @@ DEFAULT_PARITY = "none"
 DEFAULT_STOPBITS = 1
 DEFAULT_BYTESIZE = 8
 DEFAULT_SCAN_INTERVAL = 10
-DEFAULT_TIMEOUT = 1.5
+DEFAULT_TIMEOUT = 3.0
+FRAMER_SOCKET = "socket"
+FRAMER_RTU = "rtu"
+DEFAULT_FRAMER = FRAMER_SOCKET
 
 # Wiring systems
 WIRING_3P4W = "3p4w"  # Trifase 4 fili (3 fasi + neutro)

@@ -11,6 +11,16 @@ from typing import Any
 from pymodbus.client import AsyncModbusSerialClient, AsyncModbusTcpClient
 from pymodbus.exceptions import ModbusException
 
+try:
+    from pymodbus.transaction import ModbusRtuFramer, ModbusSocketFramer
+except ImportError:
+    try:
+        from pymodbus.framer.rtu_framer import ModbusRtuFramer
+        from pymodbus.framer.socket_framer import ModbusSocketFramer
+    except ImportError:
+        ModbusRtuFramer = None
+        ModbusSocketFramer = None
+
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -19,6 +29,7 @@ from .const import (
     CONF_BAUDRATE,
     CONF_BYTESIZE,
     CONF_CONNECTION_TYPE,
+    CONF_FRAMER,
     CONF_HOST,
     CONF_PARITY,
     CONF_PORT,
@@ -27,10 +38,13 @@ from .const import (
     CONF_STOPBITS,
     CONF_TIMEOUT,
     CONN_TYPE_TCP,
+    DEFAULT_FRAMER,
     DEFAULT_PORT,
     DEFAULT_SLAVE_ID,
     DEFAULT_TIMEOUT,
     DOMAIN,
+    FRAMER_RTU,
+    FRAMER_SOCKET,
     REG_DIGITAL_INPUT_STATE,
     REG_DIGITAL_OUTPUT_STATE,
     REG_PHASE_ROTATION_ERROR,
@@ -74,9 +88,9 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=timedelta(seconds=scan_interval),
         )
         self.entry_data = entry_data
-        self.slave_id = entry_data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID)
+        self.slave_id = int(entry_data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID))
         self.conn_type = entry_data.get(CONF_CONNECTION_TYPE, CONN_TYPE_TCP)
-        self.timeout = entry_data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)
+        self.timeout = float(entry_data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))
 
         self._client: AsyncModbusTcpClient | AsyncModbusSerialClient | None = None
         self._lock = asyncio.Lock()
@@ -87,16 +101,25 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Create Modbus client instance based on connection type."""
         if self.conn_type == CONN_TYPE_TCP:
             host = self.entry_data[CONF_HOST]
-            port = self.entry_data.get(CONF_PORT, DEFAULT_PORT)
-            return AsyncModbusTcpClient(
-                host=host,
-                port=port,
-                timeout=self.timeout,
+            port = int(self.entry_data.get(CONF_PORT, DEFAULT_PORT))
+            framer_type = self.entry_data.get(CONF_FRAMER, DEFAULT_FRAMER)
+            framer_cls = (
+                ModbusRtuFramer
+                if (framer_type == FRAMER_RTU and ModbusRtuFramer is not None)
+                else ModbusSocketFramer
             )
+            kwargs: dict[str, Any] = {
+                "host": host,
+                "port": port,
+                "timeout": self.timeout,
+            }
+            if framer_cls is not None:
+                kwargs["framer"] = framer_cls
+            return AsyncModbusTcpClient(**kwargs)
 
         # Serial / RTU
         port = self.entry_data[CONF_SERIAL_PORT]
-        baudrate = self.entry_data.get(CONF_BAUDRATE, 19200)
+        baudrate = int(self.entry_data.get(CONF_BAUDRATE, 19200))
         parity_str = self.entry_data.get(CONF_PARITY, "none").lower()
         parity = "N"
         if parity_str in ("even", "e"):
@@ -104,8 +127,8 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         elif parity_str in ("odd", "o"):
             parity = "O"
 
-        stopbits = self.entry_data.get(CONF_STOPBITS, 1)
-        bytesize = self.entry_data.get(CONF_BYTESIZE, 8)
+        stopbits = int(self.entry_data.get(CONF_STOPBITS, 1))
+        bytesize = int(self.entry_data.get(CONF_BYTESIZE, 8))
 
         return AsyncModbusSerialClient(
             port=port,
@@ -121,46 +144,96 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if self._client is None:
             self._client = self._create_client()
 
-        if not self._client.connected:
-            connected = await self._client.connect()
-            if not connected:
+        if not getattr(self._client, "connected", False):
+            try:
+                connected = await self._client.connect()
+            except Exception as err:
+                _LOGGER.warning("Connection failed to %s: %s", self.conn_type, err)
+                try:
+                    self._client.close()
+                except Exception:
+                    pass
+                self._client = None
+                raise UpdateFailed(f"Unable to connect to Modbus device ({self.conn_type}): {err}") from err
+
+            if not connected and not getattr(self._client, "connected", False):
+                try:
+                    self._client.close()
+                except Exception:
+                    pass
+                self._client = None
                 raise UpdateFailed(f"Unable to connect to Modbus device ({self.conn_type})")
 
-    async def _read_registers(self, address: int, count: int) -> list[int]:
+    async def _call_client_method(self, method_name: str, *args, **kwargs) -> Any:
+        """Call client method trying device_id (PyModbus >=3.8.3/3.10+), slave, and unit gracefully."""
+        client_method = getattr(self._client, method_name, None)
+        if client_method is None:
+            _LOGGER.error("Modbus client missing method: %s", method_name)
+            return None
+
+        # 1. Modern PyModbus >= 3.8.3 / 3.10+ (device_id)
+        try:
+            return await client_method(*args, device_id=self.slave_id, **kwargs)
+        except TypeError:
+            pass
+        except Exception as ex:
+            _LOGGER.debug("%s with device_id error: %s", method_name, ex)
+            return None
+
+        # 2. PyModbus 3.0 - 3.8 (slave)
+        try:
+            return await client_method(*args, slave=self.slave_id, **kwargs)
+        except TypeError:
+            pass
+        except Exception as ex:
+            _LOGGER.debug("%s with slave error: %s", method_name, ex)
+            return None
+
+        # 3. Legacy PyModbus 2.x (unit)
+        try:
+            return await client_method(*args, unit=self.slave_id, **kwargs)
+        except TypeError:
+            pass
+        except Exception as ex:
+            _LOGGER.debug("%s with unit error: %s", method_name, ex)
+            return None
+
+        # 4. Fallback without target device identifier
+        try:
+            return await client_method(*args, **kwargs)
+        except Exception as ex:
+            _LOGGER.debug("%s fallback error: %s", method_name, ex)
+            return None
+
+    async def _exec_read_holding(self, address: int, count: int) -> Any:
+        """Attempt reading holding registers (0x03)."""
+        return await self._call_client_method("read_holding_registers", address, count)
+
+    async def _exec_read_input(self, address: int, count: int) -> Any:
+        """Attempt reading input registers (0x04)."""
+        return await self._call_client_method("read_input_registers", address, count)
+
+    async def _read_registers(
+        self,
+        address: int,
+        count: int,
+        prefer_input: bool = False,
+    ) -> list[int]:
         """Read holding or input registers with backward/forward pymodbus compatibility."""
         await self._ensure_connected()
         assert self._client is not None
 
-        # Try slave keyword argument first, fallback to unit
-        try:
-            result = await self._client.read_holding_registers(
-                address=address,
-                count=count,
-                slave=self.slave_id,
-            )
-        except TypeError:
-            result = await self._client.read_holding_registers(
-                address=address,
-                count=count,
-                unit=self.slave_id,
-            )
+        result = None
+        if prefer_input:
+            result = await self._exec_read_input(address, count)
+            if result is None or result.isError():
+                result = await self._exec_read_holding(address, count)
+        else:
+            result = await self._exec_read_holding(address, count)
+            if result is None or result.isError():
+                result = await self._exec_read_input(address, count)
 
-        if result.isError():
-            # Fallback to function 0x04 (read input registers)
-            try:
-                result = await self._client.read_input_registers(
-                    address=address,
-                    count=count,
-                    slave=self.slave_id,
-                )
-            except TypeError:
-                result = await self._client.read_input_registers(
-                    address=address,
-                    count=count,
-                    unit=self.slave_id,
-                )
-
-        if result.isError():
+        if result is None or result.isError():
             raise ModbusException(f"Error reading {count} registers from address {hex(address)}: {result}")
 
         return list(result.registers)
@@ -171,20 +244,8 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             await self._ensure_connected()
             assert self._client is not None
             try:
-                try:
-                    result = await self._client.write_coil(
-                        address=address,
-                        value=value,
-                        slave=self.slave_id,
-                    )
-                except TypeError:
-                    result = await self._client.write_coil(
-                        address=address,
-                        value=value,
-                        unit=self.slave_id,
-                    )
-
-                if result.isError():
+                result = await self._call_client_method("write_coil", address, value)
+                if result is None or result.isError():
                     _LOGGER.error("Failed writing coil %s: %s", hex(address), result)
                     return False
                 _LOGGER.info("Successfully executed command on coil %s", hex(address))
@@ -199,20 +260,8 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             await self._ensure_connected()
             assert self._client is not None
             try:
-                try:
-                    result = await self._client.write_register(
-                        address=address,
-                        value=value,
-                        slave=self.slave_id,
-                    )
-                except TypeError:
-                    result = await self._client.write_register(
-                        address=address,
-                        value=value,
-                        unit=self.slave_id,
-                    )
-
-                if result.isError():
+                result = await self._call_client_method("write_register", address, value)
+                if result is None or result.isError():
                     _LOGGER.error("Failed writing register %s: %s", hex(address), result)
                     return False
                 _LOGGER.info("Successfully wrote register %s = %s", hex(address), value)
@@ -223,24 +272,24 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def fetch_device_info(self) -> None:
         """Fetch static device information (serial number)."""
-        async with self._lock:
-            try:
-                regs = await self._read_registers(REG_SERIAL_NUMBER_START, 7)
-                raw_bytes = bytearray()
-                for r in regs:
-                    raw_bytes.extend(struct.pack(">H", r))
+        try:
+            # Serial number register 0x05AA uses Function 0x04 per Circutor manual p.98
+            regs = await self._read_registers(REG_SERIAL_NUMBER_START, 7, prefer_input=True)
+            raw_bytes = bytearray()
+            for r in regs:
+                raw_bytes.extend(struct.pack(">H", r))
 
-                # Check if it's ASCII or numeric hex
-                ascii_str = raw_bytes.decode("ascii", errors="ignore").strip().strip("\x00")
-                if ascii_str and all(c.isalnum() or c in "-_" for c in ascii_str):
-                    self.serial_number = ascii_str
-                else:
-                    self.serial_number = "".join(f"{b:02X}" for b in raw_bytes if b != 0)
+            # Check if it's ASCII or numeric hex
+            ascii_str = raw_bytes.decode("ascii", errors="ignore").strip().strip("\x00")
+            if ascii_str and all(c.isalnum() or c in "-_" for c in ascii_str):
+                self.serial_number = ascii_str
+            else:
+                self.serial_number = "".join(f"{b:02X}" for b in raw_bytes if b != 0)
 
-                _LOGGER.info("CVM-E3-MINI detected with Serial Number: %s", self.serial_number)
-            except Exception as err:
-                _LOGGER.warning("Could not read serial number from device: %s", err)
-                self.serial_number = f"cvm_e3_mini_{self.slave_id}"
+            _LOGGER.info("CVM-E3-MINI detected with Serial Number: %s", self.serial_number)
+        except Exception as err:
+            _LOGGER.warning("Could not read serial number from device: %s", err)
+            self.serial_number = f"cvm_e3_mini_{self.slave_id}"
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch all data from the meter in compliant batches."""

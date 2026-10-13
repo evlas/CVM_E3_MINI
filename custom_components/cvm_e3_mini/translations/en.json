@@ -15,8 +15,10 @@
           "host": "IP Address or Hostname",
           "port": "TCP Port (default 502)",
           "slave_id": "Modbus Unit / Slave ID",
+          "framer": "TCP Protocol Type / Gateway",
           "wiring_system": "Electrical wiring system",
-          "scan_interval": "Update interval (seconds)"
+          "scan_interval": "Update interval (seconds)",
+          "timeout": "Response timeout (seconds)"
         }
       },
       "rtu": {
@@ -29,12 +31,13 @@
           "stopbits": "Stop bits",
           "slave_id": "Modbus Unit / Slave ID",
           "wiring_system": "Electrical wiring system",
-          "scan_interval": "Update interval (seconds)"
+          "scan_interval": "Update interval (seconds)",
+          "timeout": "Response timeout (seconds)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Failed to connect to Modbus device",
+      "cannot_connect": "Failed to connect to Modbus device (check IP, port, Slave ID or device power)",
       "unknown": "Unexpected error"
     },
     "abort": {
@@ -48,7 +51,8 @@
         "description": "Modify integration operational settings.",
         "data": {
           "scan_interval": "Update interval (seconds)",
-          "wiring_system": "Electrical wiring system"
+          "wiring_system": "Electrical wiring system",
+          "timeout": "Response timeout (seconds)"
         }
       }
     }

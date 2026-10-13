@@ -15,8 +15,10 @@
           "host": "Indirizzo IP o Host",
           "port": "Porta TCP (default 502)",
           "slave_id": "Indirizzo Periferico Modbus (Slave ID)",
+          "framer": "Tipo di protocollo TCP / Gateway",
           "wiring_system": "Tipo di impianto elettrico",
-          "scan_interval": "Intervallo di aggiornamento (secondi)"
+          "scan_interval": "Intervallo di aggiornamento (secondi)",
+          "timeout": "Timeout di risposta (secondi)"
         }
       },
       "rtu": {
@@ -29,12 +31,13 @@
           "stopbits": "Bit di stop",
           "slave_id": "Indirizzo Periferico Modbus (Slave ID)",
           "wiring_system": "Tipo di impianto elettrico",
-          "scan_interval": "Intervallo di aggiornamento (secondi)"
+          "scan_interval": "Intervallo di aggiornamento (secondi)",
+          "timeout": "Timeout di risposta (secondi)"
         }
       }
     },
     "error": {
-      "cannot_connect": "Impossibile connettersi al dispositivo Modbus",
+      "cannot_connect": "Impossibile connettersi al dispositivo Modbus (verifica IP, porta, Slave ID o alimentazione del dispositivo)",
       "unknown": "Errore imprevisto"
     },
     "abort": {
@@ -48,7 +51,8 @@
         "description": "Modifica i parametri operativi dell'integrazione.",
         "data": {
           "scan_interval": "Intervallo di aggiornamento (secondi)",
-          "wiring_system": "Tipo di impianto elettrico"
+          "wiring_system": "Tipo di impianto elettrico",
+          "timeout": "Timeout di risposta (secondi)"
         }
       }
     }

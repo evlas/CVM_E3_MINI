@@ -81,9 +81,11 @@ Basata sulle specifiche ufficiali del manuale d'istruzioni **Circutor M170B01-01
    - **Modbus TCP**:
      - *Host*: Indirizzo IP dell'analizzatore (es. `192.168.1.150`).
      - *Porta*: `502` (standard Modbus TCP).
-     - *Slave ID*: Numero periferico Modbus (default `1`).
+     - *Slave ID*: Numero periferico Modbus numerico (default `1`, campo numerico 1-255).
+     - *Tipo di protocollo TCP / Gateway*: Modbus TCP standard (per modelli WiEth o gateway che traducono Modbus TCP) oppure Modbus RTU over TCP (per gateway seriali trasparenti RS485-TCP come Waveshare/USR).
      - *Tipo di impianto*: Trifase 4 fili (3P+N), Trifase 3 fili (3P), o Monofase.
      - *Intervallo di scansione*: default `10` secondi.
+     - *Timeout di risposta*: default `3.0` secondi.
    - **Modbus RTU (RS-485)**:
      - *Porta seriale*: es. `/dev/ttyUSB0` o `/dev/serial/by-id/...`
      - *Baudrate*: default `19200` (o `9600`, `38400`, `57600`, `115200`).

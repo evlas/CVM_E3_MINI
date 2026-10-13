@@ -6,17 +6,34 @@ import logging
 from typing import Any
 
 from pymodbus.client import AsyncModbusSerialClient, AsyncModbusTcpClient
+
+try:
+    from pymodbus.transaction import ModbusRtuFramer, ModbusSocketFramer
+except ImportError:
+    try:
+        from pymodbus.framer.rtu_framer import ModbusRtuFramer
+        from pymodbus.framer.socket_framer import ModbusSocketFramer
+    except ImportError:
+        ModbusRtuFramer = None
+        ModbusSocketFramer = None
+
 import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+)
 
 from .const import (
     CONF_BAUDRATE,
     CONF_BYTESIZE,
     CONF_CONNECTION_TYPE,
+    CONF_FRAMER,
     CONF_HOST,
     CONF_PARITY,
     CONF_PORT,
@@ -25,10 +42,12 @@ from .const import (
     CONF_STOPBITS,
     CONF_TIMEOUT,
     CONF_WIRING_SYSTEM,
+    CONF_SCAN_INTERVAL,
     CONN_TYPE_RTU,
     CONN_TYPE_TCP,
     DEFAULT_BAUDRATE,
     DEFAULT_BYTESIZE,
+    DEFAULT_FRAMER,
     DEFAULT_NAME,
     DEFAULT_PARITY,
     DEFAULT_PORT,
@@ -37,7 +56,8 @@ from .const import (
     DEFAULT_STOPBITS,
     DEFAULT_TIMEOUT,
     DOMAIN,
-    REG_SERIAL_NUMBER_START,
+    FRAMER_RTU,
+    FRAMER_SOCKET,
     WIRING_1P2W,
     WIRING_3P3W,
     WIRING_3P4W,
@@ -46,30 +66,110 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-async def _test_tcp_connection(host: str, port: int, slave_id: int, timeout: float) -> bool:
-    """Test connection to Modbus TCP device."""
-    client = AsyncModbusTcpClient(host=host, port=port, timeout=timeout)
+async def _read_reg_universal(
+    client: Any,
+    is_input: bool,
+    reg: int,
+    count: int,
+    slave_id: int,
+) -> Any:
+    """Read registers trying device_id (PyModbus >=3.8.3/3.10+), slave, and unit safely."""
+    method = client.read_input_registers if is_input else client.read_holding_registers
+
+    # 1. Modern PyModbus >= 3.8.3 / 3.10+ uses device_id
     try:
-        connected = await client.connect()
-        if not connected:
-            return False
-        # Try reading 2 registers
+        return await method(reg, count, device_id=slave_id)
+    except TypeError:
+        pass
+    except Exception as ex:
+        _LOGGER.debug("read with device_id error at %s: %s", hex(reg), ex)
+        return None
+
+    # 2. PyModbus 3.0 - 3.8 uses slave
+    try:
+        return await method(reg, count, slave=slave_id)
+    except TypeError:
+        pass
+    except Exception as ex:
+        _LOGGER.debug("read with slave error at %s: %s", hex(reg), ex)
+        return None
+
+    # 3. Legacy PyModbus 2.x uses unit
+    try:
+        return await method(reg, count, unit=slave_id)
+    except TypeError:
+        pass
+    except Exception as ex:
+        _LOGGER.debug("read with unit error at %s: %s", hex(reg), ex)
+        return None
+
+    # 4. Fallback without target id
+    try:
+        return await method(reg, count)
+    except Exception as ex:
+        _LOGGER.debug("read fallback error at %s: %s", hex(reg), ex)
+        return None
+
+
+async def _test_tcp_connection(
+    host: str,
+    port: int,
+    slave_id: int,
+    timeout: float,
+    framer_type: str = FRAMER_SOCKET,
+) -> tuple[bool, str]:
+    """Test connection to Modbus TCP device. Returns (success, detected_framer)."""
+    framers_to_try = [framer_type]
+    alt_framer = FRAMER_RTU if framer_type == FRAMER_SOCKET else FRAMER_SOCKET
+    framers_to_try.append(alt_framer)
+
+    for current_framer in framers_to_try:
+        framer_cls = (
+            ModbusRtuFramer
+            if (current_framer == FRAMER_RTU and ModbusRtuFramer is not None)
+            else ModbusSocketFramer
+        )
+        kwargs: dict[str, Any] = {
+            "host": host,
+            "port": port,
+            "timeout": timeout,
+        }
+        if framer_cls is not None:
+            kwargs["framer"] = framer_cls
+
+        client = AsyncModbusTcpClient(**kwargs)
         try:
-            res = await client.read_holding_registers(0x1000, 2, slave=slave_id)
-        except TypeError:
-            res = await client.read_holding_registers(0x1000, 2, unit=slave_id)
-        if res.isError():
-            # Try function 0x04
+            connected = await client.connect()
+            if not connected and not getattr(client, "connected", False):
+                continue
+
+            # Try reading registers at 0x1000 (Mapa 2 V1), 0x0000 (Mapa 1 V1), or 0x05AA (Serial)
+            success = False
+            for reg in (0x1000, 0x0000, 0x05AA):
+                # Try holding registers (0x03)
+                res = await _read_reg_universal(client, False, reg, 2, slave_id)
+                if res is not None and not res.isError():
+                    success = True
+                    break
+
+                # Try input registers (0x04)
+                res = await _read_reg_universal(client, True, reg, 2, slave_id)
+                if res is not None and not res.isError():
+                    success = True
+                    break
+
+            if success:
+                return True, current_framer
+
+        except Exception as err:
+            _LOGGER.debug("Modbus TCP test with framer %s failed: %s", current_framer, err)
+        finally:
             try:
-                res = await client.read_input_registers(0x1000, 2, slave=slave_id)
-            except TypeError:
-                res = await client.read_input_registers(0x1000, 2, unit=slave_id)
-        return not res.isError()
-    except Exception as err:
-        _LOGGER.warning("Modbus TCP connection test failed: %s", err)
-        return False
-    finally:
-        client.close()
+                client.close()
+            except Exception:
+                pass
+
+    return False, framer_type
 
 
 async def _test_rtu_connection(
@@ -92,23 +192,27 @@ async def _test_rtu_connection(
     )
     try:
         connected = await client.connect()
-        if not connected:
+        if not connected and not getattr(client, "connected", False):
             return False
-        try:
-            res = await client.read_holding_registers(0x1000, 2, slave=slave_id)
-        except TypeError:
-            res = await client.read_holding_registers(0x1000, 2, unit=slave_id)
-        if res.isError():
-            try:
-                res = await client.read_input_registers(0x1000, 2, slave=slave_id)
-            except TypeError:
-                res = await client.read_input_registers(0x1000, 2, unit=slave_id)
-        return not res.isError()
+
+        for reg in (0x1000, 0x0000):
+            res = await _read_reg_universal(client, False, reg, 2, slave_id)
+            if res is not None and not res.isError():
+                return True
+
+            res = await _read_reg_universal(client, True, reg, 2, slave_id)
+            if res is not None and not res.isError():
+                return True
+
+        return False
     except Exception as err:
         _LOGGER.warning("Modbus RTU connection test failed: %s", err)
         return False
     finally:
-        client.close()
+        try:
+            client.close()
+        except Exception:
+            pass
 
 
 class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -149,36 +253,59 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            host = user_input[CONF_HOST]
-            port = user_input[CONF_PORT]
-            slave_id = user_input[CONF_SLAVE_ID]
-            timeout = user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT)
+            host = str(user_input[CONF_HOST]).strip()
+            port = int(user_input[CONF_PORT])
+            slave_id = int(user_input[CONF_SLAVE_ID])
+            timeout = float(user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))
+            framer_type = user_input.get(CONF_FRAMER, DEFAULT_FRAMER)
 
             # Check unique ID based on host:port:slave
             unique_id = f"cvm_e3_mini_{host}_{port}_{slave_id}"
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
 
-            # Optional connection test
-            success = await _test_tcp_connection(host, port, slave_id, timeout)
+            # Connection test
+            success, detected_framer = await _test_tcp_connection(
+                host, port, slave_id, timeout, framer_type
+            )
             if not success:
-                _LOGGER.warning("Could not reach meter during config flow, proceeding anyway if user wants")
-                # We can either warn or allow, let's allow or flag cannot_connect if strictly needed
-                # It's friendly to let users save even if meter is temporarily unpowered
-
-            data = {
-                CONF_CONNECTION_TYPE: CONN_TYPE_TCP,
-                **user_input,
-            }
-            title = f"{DEFAULT_NAME} ({host}:{port})"
-            return self.async_create_entry(title=title, data=data)
+                _LOGGER.warning(
+                    "Could not reach CVM-E3-MINI at %s:%s (slave ID: %s)",
+                    host,
+                    port,
+                    slave_id,
+                )
+                errors["base"] = "cannot_connect"
+            else:
+                data = {
+                    CONF_CONNECTION_TYPE: CONN_TYPE_TCP,
+                    **user_input,
+                    CONF_HOST: host,
+                    CONF_PORT: port,
+                    CONF_SLAVE_ID: slave_id,
+                    CONF_TIMEOUT: timeout,
+                    CONF_FRAMER: detected_framer,
+                }
+                title = f"{DEFAULT_NAME} ({host}:{port})"
+                return self.async_create_entry(title=title, data=data)
 
         schema = vol.Schema(
             {
                 vol.Required(CONF_HOST): str,
                 vol.Required(CONF_PORT, default=DEFAULT_PORT): cv.port,
-                vol.Required(CONF_SLAVE_ID, default=DEFAULT_SLAVE_ID): vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=255)
+                vol.Required(CONF_SLAVE_ID, default=DEFAULT_SLAVE_ID): NumberSelector(
+                    NumberSelectorConfig(
+                        min=1,
+                        max=255,
+                        step=1,
+                        mode=NumberSelectorMode.BOX,
+                    )
+                ),
+                vol.Optional(CONF_FRAMER, default=DEFAULT_FRAMER): vol.In(
+                    {
+                        FRAMER_SOCKET: "Modbus TCP (Standard / WiEth / Gateway Modbus TCP)",
+                        FRAMER_RTU: "Modbus RTU over TCP (Gateway seriale trasparente)",
+                    }
                 ),
                 vol.Optional(
                     CONF_WIRING_SYSTEM, default=WIRING_3P4W
@@ -189,8 +316,21 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         WIRING_1P2W: "Monofase (1P + N)",
                     }
                 ),
-                vol.Optional("scan_interval", default=DEFAULT_SCAN_INTERVAL): vol.All(
-                    vol.Coerce(int), vol.Range(min=2, max=300)
+                vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): NumberSelector(
+                    NumberSelectorConfig(
+                        min=2,
+                        max=300,
+                        step=1,
+                        mode=NumberSelectorMode.BOX,
+                    )
+                ),
+                vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): NumberSelector(
+                    NumberSelectorConfig(
+                        min=0.5,
+                        max=30.0,
+                        step=0.5,
+                        mode=NumberSelectorMode.BOX,
+                    )
                 ),
             }
         )
@@ -202,19 +342,39 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            serial_port = user_input[CONF_SERIAL_PORT]
-            slave_id = user_input[CONF_SLAVE_ID]
+            serial_port = str(user_input[CONF_SERIAL_PORT]).strip()
+            baudrate = int(user_input[CONF_BAUDRATE])
+            parity = user_input[CONF_PARITY]
+            stopbits = int(user_input[CONF_STOPBITS])
+            slave_id = int(user_input[CONF_SLAVE_ID])
+            timeout = float(user_input.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))
 
             unique_id = f"cvm_e3_mini_{serial_port}_{slave_id}"
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
 
-            data = {
-                CONF_CONNECTION_TYPE: CONN_TYPE_RTU,
-                **user_input,
-            }
-            title = f"{DEFAULT_NAME} (RS485 ID {slave_id})"
-            return self.async_create_entry(title=title, data=data)
+            success = await _test_rtu_connection(
+                serial_port, baudrate, parity, stopbits, slave_id, timeout
+            )
+            if not success:
+                _LOGGER.warning(
+                    "Could not reach CVM-E3-MINI on %s (slave ID: %s)",
+                    serial_port,
+                    slave_id,
+                )
+                errors["base"] = "cannot_connect"
+            else:
+                data = {
+                    CONF_CONNECTION_TYPE: CONN_TYPE_RTU,
+                    **user_input,
+                    CONF_SERIAL_PORT: serial_port,
+                    CONF_BAUDRATE: baudrate,
+                    CONF_STOPBITS: stopbits,
+                    CONF_SLAVE_ID: slave_id,
+                    CONF_TIMEOUT: timeout,
+                }
+                title = f"{DEFAULT_NAME} (RS485 ID {slave_id})"
+                return self.async_create_entry(title=title, data=data)
 
         schema = vol.Schema(
             {
@@ -226,8 +386,13 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     {"none": "Nessuna (None)", "even": "Pari (Even)", "odd": "Dispari (Odd)"}
                 ),
                 vol.Required(CONF_STOPBITS, default=DEFAULT_STOPBITS): vol.In([1, 2]),
-                vol.Required(CONF_SLAVE_ID, default=DEFAULT_SLAVE_ID): vol.All(
-                    vol.Coerce(int), vol.Range(min=1, max=255)
+                vol.Required(CONF_SLAVE_ID, default=DEFAULT_SLAVE_ID): NumberSelector(
+                    NumberSelectorConfig(
+                        min=1,
+                        max=255,
+                        step=1,
+                        mode=NumberSelectorMode.BOX,
+                    )
                 ),
                 vol.Optional(
                     CONF_WIRING_SYSTEM, default=WIRING_3P4W
@@ -238,8 +403,21 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         WIRING_1P2W: "Monofase (1P + N)",
                     }
                 ),
-                vol.Optional("scan_interval", default=DEFAULT_SCAN_INTERVAL): vol.All(
-                    vol.Coerce(int), vol.Range(min=2, max=300)
+                vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): NumberSelector(
+                    NumberSelectorConfig(
+                        min=2,
+                        max=300,
+                        step=1,
+                        mode=NumberSelectorMode.BOX,
+                    )
+                ),
+                vol.Optional(CONF_TIMEOUT, default=DEFAULT_TIMEOUT): NumberSelector(
+                    NumberSelectorConfig(
+                        min=0.5,
+                        max=30.0,
+                        step=0.5,
+                        mode=NumberSelectorMode.BOX,
+                    )
                 ),
             }
         )
@@ -266,18 +444,27 @@ class CvmE3MiniOptionsFlowHandler(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         current_interval = self.config_entry.options.get(
-            "scan_interval",
-            self.config_entry.data.get("scan_interval", DEFAULT_SCAN_INTERVAL),
+            CONF_SCAN_INTERVAL,
+            self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
         )
         current_wiring = self.config_entry.options.get(
             CONF_WIRING_SYSTEM,
             self.config_entry.data.get(CONF_WIRING_SYSTEM, WIRING_3P4W),
         )
+        current_timeout = self.config_entry.options.get(
+            CONF_TIMEOUT,
+            self.config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
+        )
 
         schema = vol.Schema(
             {
-                vol.Optional("scan_interval", default=current_interval): vol.All(
-                    vol.Coerce(int), vol.Range(min=2, max=300)
+                vol.Optional(CONF_SCAN_INTERVAL, default=current_interval): NumberSelector(
+                    NumberSelectorConfig(
+                        min=2,
+                        max=300,
+                        step=1,
+                        mode=NumberSelectorMode.BOX,
+                    )
                 ),
                 vol.Optional(CONF_WIRING_SYSTEM, default=current_wiring): vol.In(
                     {
@@ -285,6 +472,14 @@ class CvmE3MiniOptionsFlowHandler(config_entries.OptionsFlow):
                         WIRING_3P3W: "Trifase 3 fili (3P)",
                         WIRING_1P2W: "Monofase (1P + N)",
                     }
+                ),
+                vol.Optional(CONF_TIMEOUT, default=current_timeout): NumberSelector(
+                    NumberSelectorConfig(
+                        min=0.5,
+                        max=30.0,
+                        step=0.5,
+                        mode=NumberSelectorMode.BOX,
+                    )
                 ),
             }
         )
