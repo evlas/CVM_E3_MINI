@@ -1,6 +1,10 @@
 # Circutor CVM-E3-MINI - Integrazione Home Assistant
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/default)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/default)
+[![GitHub Release](https://img.shields.io/github/v/release/evlas/CVM_E3_MINI?color=blue&style=flat-square)](https://github.com/evlas/CVM_E3_MINI/releases)
+[![Hassfest](https://github.com/evlas/CVM_E3_MINI/actions/workflows/hassfest.yml/badge.svg)](https://github.com/evlas/CVM_E3_MINI/actions/workflows/hassfest.yml)
+[![HACS Action](https://github.com/evlas/CVM_E3_MINI/actions/workflows/hacs.yml/badge.svg)](https://github.com/evlas/CVM_E3_MINI/actions/workflows/hacs.yml)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2023.8%2B-blue.svg)](https://www.home-assistant.io/)
 
 Integrazione professionale per **Home Assistant** per l'analizzatore di rete trifase **Circutor CVM-E3-MINI** (e versioni WiEth / ITF / MC / FLEX) tramite protocollo **Modbus** (RTU su RS-485 o TCP su Ethernet/Wi-Fi/Gateway).
@@ -116,7 +120,7 @@ Per aggiungere il CVM-E3-MINI alla **Dashboard Energia** ufficiale di Home Assis
 
 ## 🎛️ Esempio Scheda Lovelace (WebUI)
 
-Puoi importare la dashboard completa copiando il file [`lovelace_card_example.yaml`](file:///home/vito/Documenti/GitLocale/CVM_E3_MINI/lovelace_card_example.yaml) direttamente nell'editor delle schede di Lovelace.
+Puoi importare la dashboard completa copiando il file [`lovelace_card_example.yaml`](lovelace_card_example.yaml) direttamente nell'editor delle schede di Lovelace.
 
 Ecco un esempio compatto:
 
@@ -149,7 +153,7 @@ cards:
 ## 🛠️ Alternativa Senza Custom Component: Pacchetto YAML Nativo
 
 Se preferisci non usare Custom Component e configurare direttamente il componente nativo `modbus:` di Home Assistant, è fornito il file pronto all'uso:
-👉 [`cvm_e3_mini_modbus_package.yaml`](file:///home/vito/Documenti/GitLocale/CVM_E3_MINI/cvm_e3_mini_modbus_package.yaml)
+👉 [`cvm_e3_mini_modbus_package.yaml`](cvm_e3_mini_modbus_package.yaml)
 
 Basta posizionarlo nella cartella `config/packages/` del proprio Home Assistant.
 
@@ -185,4 +189,4 @@ L'integrazione utilizza il **MAPA 2** raccomandato dal produttore:
 
 ## 📄 Licenza
 
-Rilasciato sotto licenza MIT.
+Distribuito sotto licenza GNU General Public License v3.0 (GPLv3). Consulta il file [LICENSE](LICENSE) per maggiori informazioni.

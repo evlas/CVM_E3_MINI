@@ -1,12 +1,12 @@
 {
   "domain": "cvm_e3_mini",
   "name": "Circutor CVM-E3-MINI",
-  "codeowners": ["@vito"],
+  "codeowners": ["@evlas"],
   "config_flow": true,
-  "documentation": "https://github.com/vito/CVM_E3_MINI",
+  "documentation": "https://github.com/evlas/CVM_E3_MINI",
   "integration_type": "hub",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/vito/CVM_E3_MINI/issues",
+  "issue_tracker": "https://github.com/evlas/CVM_E3_MINI/issues",
   "requirements": ["pymodbus>=3.6.0"],
   "version": "1.0.0"
 }
