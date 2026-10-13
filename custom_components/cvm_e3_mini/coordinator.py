@@ -46,11 +46,8 @@ from .const import (
     DOMAIN,
     FRAMER_RTU,
     FRAMER_SOCKET,
-    REG_DIGITAL_INPUT_STATE,
-    REG_DIGITAL_OUTPUT_STATE,
     REG_PHASE_ROTATION_ERROR,
     REG_POWER_STATUS,
-    REG_PULSE_COUNTER_START,
     REG_SERIAL_NUMBER_START,
     WIRING_3P4W,
     WIRING_3P3W,
@@ -67,63 +64,6 @@ def _decode_s32(r0: int, r1: int) -> int:
 def _decode_u32(r0: int, r1: int) -> int:
     """Decode two 16-bit registers as unsigned 32-bit big-endian integer."""
     return struct.unpack(">I", struct.pack(">HH", r0, r1))[0]
-
-
-def _decode_u64(r0: int, r1: int, r2: int, r3: int) -> int:
-    """Decode four 16-bit registers as unsigned 64-bit big-endian integer."""
-    return struct.unpack(">Q", struct.pack(">HHHH", r0, r1, r2, r3))[0]
-
-
-def _decode_30_vars(b: list[int], suffix: str, data: dict[str, Any]) -> None:
-    """Decode 30 variables block (60 registers) for Max or Min."""
-    data[f"voltage_l1_{suffix}"] = _decode_u32(b[0], b[1]) / 10.0
-    data[f"current_l1_{suffix}"] = _decode_u32(b[2], b[3]) / 1000.0
-    data[f"power_active_l1_{suffix}"] = _decode_s32(b[4], b[5])
-    data[f"power_reactive_ind_l1_{suffix}"] = _decode_s32(b[6], b[7])
-    data[f"power_reactive_cap_l1_{suffix}"] = _decode_s32(b[8], b[9])
-    data[f"power_apparent_l1_{suffix}"] = _decode_u32(b[10], b[11])
-    data[f"power_factor_l1_{suffix}"] = _decode_s32(b[12], b[13]) / 100.0
-    data[f"cos_phi_l1_{suffix}"] = _decode_s32(b[14], b[15]) / 100.0
-
-    data[f"voltage_l2_{suffix}"] = _decode_u32(b[16], b[17]) / 10.0
-    data[f"current_l2_{suffix}"] = _decode_u32(b[18], b[19]) / 1000.0
-    data[f"power_active_l2_{suffix}"] = _decode_s32(b[20], b[21])
-    data[f"power_reactive_ind_l2_{suffix}"] = _decode_s32(b[22], b[23])
-    data[f"power_reactive_cap_l2_{suffix}"] = _decode_s32(b[24], b[25])
-    data[f"power_apparent_l2_{suffix}"] = _decode_u32(b[26], b[27])
-    data[f"power_factor_l2_{suffix}"] = _decode_s32(b[28], b[29]) / 100.0
-    data[f"cos_phi_l2_{suffix}"] = _decode_s32(b[30], b[31]) / 100.0
-
-    data[f"voltage_l3_{suffix}"] = _decode_u32(b[32], b[33]) / 10.0
-    data[f"current_l3_{suffix}"] = _decode_u32(b[34], b[35]) / 1000.0
-    data[f"power_active_l3_{suffix}"] = _decode_s32(b[36], b[37])
-    data[f"power_reactive_ind_l3_{suffix}"] = _decode_s32(b[38], b[39])
-    data[f"power_reactive_cap_l3_{suffix}"] = _decode_s32(b[40], b[41])
-    data[f"power_apparent_l3_{suffix}"] = _decode_u32(b[42], b[43])
-    data[f"power_factor_l3_{suffix}"] = _decode_s32(b[44], b[45]) / 100.0
-    data[f"cos_phi_l3_{suffix}"] = _decode_s32(b[46], b[47]) / 100.0
-
-    data[f"power_active_total_{suffix}"] = _decode_s32(b[48], b[49])
-    data[f"power_reactive_ind_total_{suffix}"] = _decode_s32(b[50], b[51])
-    data[f"power_reactive_cap_total_{suffix}"] = _decode_s32(b[52], b[53])
-    data[f"power_apparent_total_{suffix}"] = _decode_u32(b[54], b[55])
-    data[f"power_factor_total_{suffix}"] = _decode_s32(b[56], b[57]) / 100.0
-    data[f"cos_phi_total_{suffix}"] = _decode_s32(b[58], b[59]) / 100.0
-
-
-def _decode_11_vars(b: list[int], suffix: str, data: dict[str, Any]) -> None:
-    """Decode 11 variables block (22 registers) for Max or Min."""
-    data[f"frequency_{suffix}"] = _decode_u32(b[0], b[1]) / 100.0
-    data[f"voltage_l1_l2_{suffix}"] = _decode_u32(b[2], b[3]) / 10.0
-    data[f"voltage_l2_l3_{suffix}"] = _decode_u32(b[4], b[5]) / 10.0
-    data[f"voltage_l3_l1_{suffix}"] = _decode_u32(b[6], b[7]) / 10.0
-    data[f"current_neutral_{suffix}"] = _decode_u32(b[8], b[9]) / 1000.0
-    data[f"thd_voltage_l1_{suffix}"] = _decode_u32(b[10], b[11]) / 10.0
-    data[f"thd_voltage_l2_{suffix}"] = _decode_u32(b[12], b[13]) / 10.0
-    data[f"thd_voltage_l3_{suffix}"] = _decode_u32(b[14], b[15]) / 10.0
-    data[f"thd_current_l1_{suffix}"] = _decode_u32(b[16], b[17]) / 10.0
-    data[f"thd_current_l2_{suffix}"] = _decode_u32(b[18], b[19]) / 10.0
-    data[f"thd_current_l3_{suffix}"] = _decode_u32(b[20], b[21]) / 10.0
 
 
 def _decode_harmonics_voltage(b: list[int], phase: str, data: dict[str, Any]) -> None:
@@ -376,8 +316,8 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["power_reactive_ind_l1"] = _decode_s32(b1[6], b1[7])
                 data["power_reactive_cap_l1"] = _decode_s32(b1[8], b1[9])
                 data["power_apparent_l1"] = _decode_u32(b1[10], b1[11])
-                data["power_factor_l1"] = _decode_s32(b1[12], b1[13]) / 100.0
-                data["cos_phi_l1"] = _decode_s32(b1[14], b1[15]) / 100.0
+                data["power_factor_l1"] = _decode_s32(b1[12], b1[13])
+                data["cos_phi_l1"] = _decode_s32(b1[14], b1[15])
 
                 # Phase 2
                 data["voltage_l2"] = _decode_u32(b1[16], b1[17]) / 10.0
@@ -386,8 +326,8 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["power_reactive_ind_l2"] = _decode_s32(b1[22], b1[23])
                 data["power_reactive_cap_l2"] = _decode_s32(b1[24], b1[25])
                 data["power_apparent_l2"] = _decode_u32(b1[26], b1[27])
-                data["power_factor_l2"] = _decode_s32(b1[28], b1[29]) / 100.0
-                data["cos_phi_l2"] = _decode_s32(b1[30], b1[31]) / 100.0
+                data["power_factor_l2"] = _decode_s32(b1[28], b1[29])
+                data["cos_phi_l2"] = _decode_s32(b1[30], b1[31])
 
                 # Phase 3
                 data["voltage_l3"] = _decode_u32(b1[32], b1[33]) / 10.0
@@ -396,24 +336,24 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["power_reactive_ind_l3"] = _decode_s32(b1[38], b1[39])
                 data["power_reactive_cap_l3"] = _decode_s32(b1[40], b1[41])
                 data["power_apparent_l3"] = _decode_u32(b1[42], b1[43])
-                data["power_factor_l3"] = _decode_s32(b1[44], b1[45]) / 100.0
-                data["cos_phi_l3"] = _decode_s32(b1[46], b1[47]) / 100.0
+                data["power_factor_l3"] = _decode_s32(b1[44], b1[45])
+                data["cos_phi_l3"] = _decode_s32(b1[46], b1[47])
 
                 # Three-phase partial
                 data["power_active_total"] = _decode_s32(b1[48], b1[49])
                 data["power_reactive_ind_total"] = _decode_s32(b1[50], b1[51])
 
                 # -------------------------------------------------------------
-                # BLOCK 2: Totals, frequency, line voltages, THD & Max Demand (0x1034 - 0x105D)
-                # 42 registers = 21 variables
+                # BLOCK 2: Totals, frequency, line voltages, THD (0x1034 - 0x1051)
+                # 30 registers = 15 variables
                 # -------------------------------------------------------------
-                b2 = await self._read_registers(0x1034, 42)
+                b2 = await self._read_registers(0x1034, 30)
                 await asyncio.sleep(0.1)
 
                 data["power_reactive_cap_total"] = _decode_s32(b2[0], b2[1])
                 data["power_apparent_total"] = _decode_u32(b2[2], b2[3])
-                data["power_factor_total"] = _decode_s32(b2[4], b2[5]) / 100.0
-                data["cos_phi_total"] = _decode_s32(b2[6], b2[7]) / 100.0
+                data["power_factor_total"] = _decode_s32(b2[4], b2[5])
+                data["cos_phi_total"] = _decode_s32(b2[6], b2[7])
                 data["frequency"] = _decode_u32(b2[8], b2[9]) / 100.0
                 data["voltage_l1_l2"] = _decode_u32(b2[10], b2[11]) / 10.0
                 data["voltage_l2_l3"] = _decode_u32(b2[12], b2[13]) / 10.0
@@ -425,24 +365,6 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["thd_current_l1"] = _decode_u32(b2[24], b2[25]) / 10.0
                 data["thd_current_l2"] = _decode_u32(b2[26], b2[27]) / 10.0
                 data["thd_current_l3"] = _decode_u32(b2[28], b2[29]) / 10.0
-
-                # Max demands
-                data["max_demand_active_power"] = _decode_s32(b2[30], b2[31])
-                data["max_demand_apparent_power"] = _decode_u32(b2[32], b2[33])
-                data["max_demand_current_l1"] = _decode_u32(b2[36], b2[37]) / 1000.0
-                data["max_demand_current_l2"] = _decode_u32(b2[38], b2[39]) / 1000.0
-                data["max_demand_current_l3"] = _decode_u32(b2[40], b2[41]) / 1000.0
-
-                # -------------------------------------------------------------
-                # BLOCK 2b: Reactive Max Demands (0x1200 - 0x1203)
-                # -------------------------------------------------------------
-                try:
-                    b2b = await self._read_registers(0x1200, 4)
-                    await asyncio.sleep(0.05)
-                    data["max_demand_reactive_ind_power"] = _decode_s32(b2b[0], b2b[1])
-                    data["max_demand_reactive_cap_power"] = _decode_s32(b2b[2], b2b[3])
-                except Exception as err:
-                    _LOGGER.debug("Could not read reactive max demand registers: %s", err)
 
                 # -------------------------------------------------------------
                 # BLOCK 3: Total Energies (0x10DC - 0x1105)
@@ -459,8 +381,6 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["energy_reactive_cap_consumed_varh_total"] = _decode_u32(b3[10], b3[11])  # varh
                 data["energy_apparent_consumed_total"] = _decode_u32(b3[12], b3[13])  # kVAh
                 data["energy_apparent_consumed_vah_total"] = _decode_u32(b3[14], b3[15])  # VAh
-                data["co2_consumed_total"] = _decode_u32(b3[16], b3[17]) / 10.0  # kg
-                data["cost_consumed_total"] = _decode_u32(b3[18], b3[19]) / 10.0
 
                 data["energy_active_generated_total"] = _decode_u32(b3[20], b3[21])  # kWh
                 data["energy_active_generated_wh_total"] = _decode_u32(b3[22], b3[23])  # Wh
@@ -470,50 +390,10 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["energy_reactive_cap_generated_varh_total"] = _decode_u32(b3[30], b3[31])  # varh
                 data["energy_apparent_generated_total"] = _decode_u32(b3[32], b3[33])  # kVAh
                 data["energy_apparent_generated_vah_total"] = _decode_u32(b3[34], b3[35])  # VAh
-                data["co2_generated_total"] = _decode_u32(b3[36], b3[37]) / 10.0  # kg
-                data["cost_generated_total"] = _decode_u32(b3[38], b3[39]) / 10.0
                 data["operating_hours_total"] = _decode_u32(b3[40], b3[41]) / 3600.0  # converted to hours
 
                 # -------------------------------------------------------------
-                # BLOCK 4: Maxima (0x1106 - 0x1163, 0x1204 - 0x1207)
-                # -------------------------------------------------------------
-                try:
-                    b_max1 = await self._read_registers(0x1106, 60)
-                    _decode_30_vars(b_max1, "max", data)
-                    await asyncio.sleep(0.05)
-
-                    b_max2 = await self._read_registers(0x1142, 34)
-                    _decode_11_vars(b_max2[:22], "max", data)
-                    data["max_demand_active_power_max"] = _decode_s32(b_max2[22], b_max2[23])
-                    data["max_demand_apparent_power_max"] = _decode_u32(b_max2[24], b_max2[25])
-                    data["max_demand_current_l1_max"] = _decode_u32(b_max2[28], b_max2[29]) / 1000.0
-                    data["max_demand_current_l2_max"] = _decode_u32(b_max2[30], b_max2[31]) / 1000.0
-                    data["max_demand_current_l3_max"] = _decode_u32(b_max2[32], b_max2[33]) / 1000.0
-                    await asyncio.sleep(0.05)
-
-                    b_max3 = await self._read_registers(0x1204, 4)
-                    data["max_demand_reactive_ind_power_max"] = _decode_s32(b_max3[0], b_max3[1])
-                    data["max_demand_reactive_cap_power_max"] = _decode_s32(b_max3[2], b_max3[3])
-                    await asyncio.sleep(0.05)
-                except Exception as err:
-                    _LOGGER.debug("Could not read maximum values: %s", err)
-
-                # -------------------------------------------------------------
-                # BLOCK 5: Minima (0x1164 - 0x11B5)
-                # -------------------------------------------------------------
-                try:
-                    b_min1 = await self._read_registers(0x1164, 60)
-                    _decode_30_vars(b_min1, "min", data)
-                    await asyncio.sleep(0.05)
-
-                    b_min2 = await self._read_registers(0x11A0, 22)
-                    _decode_11_vars(b_min2, "min", data)
-                    await asyncio.sleep(0.05)
-                except Exception as err:
-                    _LOGGER.debug("Could not read minimum values: %s", err)
-
-                # -------------------------------------------------------------
-                # BLOCK 6: Harmonics (0x1A28 - 0x1AE7)
+                # BLOCK 4: Harmonics (0x1A28 - 0x1AE7)
                 # -------------------------------------------------------------
                 try:
                     wiring = self.entry_data.get(CONF_WIRING_SYSTEM, WIRING_3P4W)
@@ -548,47 +428,37 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     _LOGGER.debug("Could not read harmonic registers: %s", err)
 
                 # -------------------------------------------------------------
-                # Internal Temperature (M1 0x0050, 0x00B0, 0x0110)
+                # Internal Temperature (M1 0x0050)
                 # -------------------------------------------------------------
                 try:
                     temp_inst = await self._read_registers(0x0050, 2)
                     data["internal_temperature"] = _decode_s32(temp_inst[0], temp_inst[1]) / 10.0
-                    temp_max = await self._read_registers(0x00B0, 2)
-                    data["internal_temperature_max"] = _decode_s32(temp_max[0], temp_max[1]) / 10.0
-                    temp_min = await self._read_registers(0x0110, 2)
-                    data["internal_temperature_min"] = _decode_s32(temp_min[0], temp_min[1]) / 10.0
                     await asyncio.sleep(0.05)
                 except Exception as err:
-                    _LOGGER.debug("Could not read internal temperature registers: %s", err)
+                    _LOGGER.debug("Could not read internal temperature register: %s", err)
 
                 # -------------------------------------------------------------
-                # BLOCK 7: Status and Digital I/O
+                # Status: Power Quadrant (0x07D1) and Phase Rotation (0x07D5)
                 # -------------------------------------------------------------
                 try:
-                    status_regs = await self._read_registers(REG_POWER_STATUS, 5)
-                    await asyncio.sleep(0.05)
-                    # 0x07D1: Power quadrant
-                    quad_raw = status_regs[0]
+                    # 0x07D1: Power quadrant status bitfield (Function 0x04)
+                    quad_regs = await self._read_registers(REG_POWER_STATUS, 1, prefer_input=True)
+                    quad_raw = quad_regs[0]
                     data["quadrant_consumed"] = bool(quad_raw & 0x01)
                     data["quadrant_generated"] = bool(quad_raw & 0x02)
                     data["quadrant_inductive"] = bool(quad_raw & 0x04)
                     data["quadrant_capacitive"] = bool(quad_raw & 0x08)
-
-                    # 0x07D5 is offset +4
-                    data["phase_rotation_error"] = bool(status_regs[4] == 1)
                 except Exception as err:
-                    _LOGGER.debug("Could not read power status registers: %s", err)
+                    _LOGGER.debug("Could not read power quadrant register 0x07D1: %s", err)
+
+                await asyncio.sleep(0.05)
 
                 try:
-                    io_regs = await self._read_registers(REG_DIGITAL_INPUT_STATE, 7)
-                    # 0x4E20: Digital Input
-                    data["digital_input"] = bool(io_regs[0] & 0x01)
-                    # 0x4E21: Digital Output
-                    data["digital_output"] = bool(io_regs[1] & 0x01)
-                    # 0x4E23 - 0x4E26: Pulse counter (Uint64)
-                    data["pulse_counter"] = _decode_u64(io_regs[3], io_regs[4], io_regs[5], io_regs[6])
+                    # 0x07D5: Phase sequence check (Function 0x04: 0 = OK, 1 = Error)
+                    rot_regs = await self._read_registers(REG_PHASE_ROTATION_ERROR, 1, prefer_input=True)
+                    data["phase_rotation_error"] = bool(rot_regs[0] == 1)
                 except Exception as err:
-                    _LOGGER.debug("Could not read digital I/O registers: %s", err)
+                    _LOGGER.warning("Could not read phase rotation register 0x07D5: %s", err)
 
                 return data
 

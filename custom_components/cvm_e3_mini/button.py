@@ -21,12 +21,6 @@ from .const import (
     COIL_RESET_ALL_PARAMETERS,
     COIL_RESET_ENERGY_ALL,
     COIL_RESET_ENERGY_THREEPHASE,
-    COIL_RESET_HOURS_T1,
-    COIL_RESET_HOURS_T2,
-    COIL_RESET_MAX_DEMAND,
-    COIL_RESET_MAXIMUMS,
-    COIL_RESET_MINIMUMS,
-    COIL_RESET_PULSE_COUNTER,
     DOMAIN,
 )
 from .coordinator import CvmE3MiniCoordinator
@@ -43,27 +37,6 @@ class CvmButtonEntityDescription(ButtonEntityDescription):
 
 BUTTON_DESCRIPTIONS: tuple[CvmButtonEntityDescription, ...] = (
     CvmButtonEntityDescription(
-        key="reset_maximums",
-        name="Azzera Valori Massimi",
-        icon="mdi:arrow-collapse-up",
-        entity_category=EntityCategory.CONFIG,
-        coil_address=COIL_RESET_MAXIMUMS,
-    ),
-    CvmButtonEntityDescription(
-        key="reset_minimums",
-        name="Azzera Valori Minimi",
-        icon="mdi:arrow-collapse-down",
-        entity_category=EntityCategory.CONFIG,
-        coil_address=COIL_RESET_MINIMUMS,
-    ),
-    CvmButtonEntityDescription(
-        key="reset_max_demand",
-        name="Azzera Massima Richiesta",
-        icon="mdi:chart-bell-curve",
-        entity_category=EntityCategory.CONFIG,
-        coil_address=COIL_RESET_MAX_DEMAND,
-    ),
-    CvmButtonEntityDescription(
         key="reset_energy_threephase",
         name="Azzera Contatori Energia Trifase",
         icon="mdi:counter",
@@ -76,27 +49,6 @@ BUTTON_DESCRIPTIONS: tuple[CvmButtonEntityDescription, ...] = (
         icon="mdi:restore-alert",
         entity_category=EntityCategory.CONFIG,
         coil_address=COIL_RESET_ENERGY_ALL,
-    ),
-    CvmButtonEntityDescription(
-        key="reset_pulse_counter",
-        name="Azzera Contatore Impulsi",
-        icon="mdi:numeric-0-box-multiple-outline",
-        entity_category=EntityCategory.CONFIG,
-        coil_address=COIL_RESET_PULSE_COUNTER,
-    ),
-    CvmButtonEntityDescription(
-        key="reset_hours_t1",
-        name="Azzera Ore Tariffa 1",
-        icon="mdi:clock-fast",
-        entity_category=EntityCategory.CONFIG,
-        coil_address=COIL_RESET_HOURS_T1,
-    ),
-    CvmButtonEntityDescription(
-        key="reset_hours_t2",
-        name="Azzera Ore Tariffa 2",
-        icon="mdi:clock-fast",
-        entity_category=EntityCategory.CONFIG,
-        coil_address=COIL_RESET_HOURS_T2,
     ),
     CvmButtonEntityDescription(
         key="reset_all_parameters",

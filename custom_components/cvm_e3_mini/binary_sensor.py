@@ -28,16 +28,6 @@ class CvmBinarySensorEntityDescription(BinarySensorEntityDescription):
 
 BINARY_SENSOR_DESCRIPTIONS: tuple[CvmBinarySensorEntityDescription, ...] = (
     CvmBinarySensorEntityDescription(
-        key="digital_input",
-        name="Ingresso Digitale",
-        icon="mdi:import",
-    ),
-    CvmBinarySensorEntityDescription(
-        key="digital_output",
-        name="Uscita Digitale (Relè / Allarme)",
-        icon="mdi:export",
-    ),
-    CvmBinarySensorEntityDescription(
         key="phase_rotation_error",
         name="Errore Senso Ciclico Fasi",
         device_class=BinarySensorDeviceClass.PROBLEM,
@@ -120,4 +110,6 @@ class CvmE3MiniBinarySensor(CoordinatorEntity[CvmE3MiniCoordinator], BinarySenso
     @property
     def is_on(self) -> bool | None:
         """Return true if the binary sensor is on."""
+        if not self.coordinator.data:
+            return None
         return self.coordinator.data.get(self.entity_description.key)

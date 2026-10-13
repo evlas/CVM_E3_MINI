@@ -14,6 +14,7 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     EntityCategory,
+    PERCENTAGE,
     UnitOfApparentPower,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
@@ -265,14 +266,16 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Fattore di Potenza Totale",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
     ),
     CvmSensorEntityDescription(
         key="power_factor_l1",
         name="Fattore di Potenza L1",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmSensorEntityDescription(
@@ -280,7 +283,8 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Fattore di Potenza L2",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
@@ -289,36 +293,45 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Fattore di Potenza L3",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
     CvmSensorEntityDescription(
         key="cos_phi_total",
         name="Cos φ Totale",
+        device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
     ),
     CvmSensorEntityDescription(
         key="cos_phi_l1",
         name="Cos φ L1",
+        device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmSensorEntityDescription(
         key="cos_phi_l2",
         name="Cos φ L2",
+        device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
     CvmSensorEntityDescription(
         key="cos_phi_l3",
         name="Cos φ L3",
+        device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=2,
+        native_unit_of_measurement=PERCENTAGE,
+        suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
@@ -383,126 +396,6 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         suggested_display_precision=1,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        wiring_supported=(WIRING_3P4W, WIRING_3P3W),
-    ),
-
-    # --- MAX DEMANDS ---
-    CvmSensorEntityDescription(
-        key="max_demand_active_power",
-        name="Massima Richiesta Potenza Attiva",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfPower.WATT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_apparent_power",
-        name="Massima Richiesta Potenza Apparente",
-        device_class=SensorDeviceClass.APPARENT_POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_apparent_power_max",
-        name="Massima Richiesta Potenza Apparente (Max)",
-        device_class=SensorDeviceClass.APPARENT_POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_active_power_max",
-        name="Massima Richiesta Potenza Attiva (Max)",
-        device_class=SensorDeviceClass.POWER,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfPower.WATT,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_reactive_ind_power",
-        name="Massima Richiesta Potenza Reattiva Induttiva",
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="var",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_reactive_ind_power_max",
-        name="Massima Richiesta Potenza Reattiva Induttiva (Max)",
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="var",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_reactive_cap_power",
-        name="Massima Richiesta Potenza Reattiva Capacitiva",
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="var",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_reactive_cap_power_max",
-        name="Massima Richiesta Potenza Reattiva Capacitiva (Max)",
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="var",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_current_l1",
-        name="Massima Richiesta Corrente L1",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
-        suggested_display_precision=2,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_current_l1_max",
-        name="Massima Richiesta Corrente L1 (Max)",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
-        suggested_display_precision=2,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_current_l2",
-        name="Massima Richiesta Corrente L2",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
-        suggested_display_precision=2,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        wiring_supported=(WIRING_3P4W, WIRING_3P3W),
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_current_l2_max",
-        name="Massima Richiesta Corrente L2 (Max)",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
-        suggested_display_precision=2,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        wiring_supported=(WIRING_3P4W, WIRING_3P3W),
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_current_l3",
-        name="Massima Richiesta Corrente L3",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
-        suggested_display_precision=2,
-        entity_category=EntityCategory.DIAGNOSTIC,
-        wiring_supported=(WIRING_3P4W, WIRING_3P3W),
-    ),
-    CvmSensorEntityDescription(
-        key="max_demand_current_l3_max",
-        name="Massima Richiesta Corrente L3 (Max)",
-        device_class=SensorDeviceClass.CURRENT,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
-        suggested_display_precision=2,
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
@@ -637,67 +530,8 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         suggested_display_precision=1,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
-    CvmSensorEntityDescription(
-        key="internal_temperature_max",
-        name="Temperatura Interna (Max)",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        suggested_display_precision=1,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="internal_temperature_min",
-        name="Temperatura Interna (Min)",
-        device_class=SensorDeviceClass.TEMPERATURE,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
-        suggested_display_precision=1,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
 
-    # --- DIGITAL INPUT PULSE COUNTER & CO2 / COST ---
-    CvmSensorEntityDescription(
-        key="pulse_counter",
-        name="Contatore Impulsi Ingresso Digitale",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="impulsi",
-        icon="mdi:counter",
-    ),
-    CvmSensorEntityDescription(
-        key="co2_consumed_total",
-        name="Emissioni CO2 Consumate Totali",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="kg",
-        icon="mdi:molecule-co2",
-        suggested_display_precision=1,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="co2_generated_total",
-        name="Emissioni CO2 Evitate Totali",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="kg",
-        icon="mdi:molecule-co2",
-        suggested_display_precision=1,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="cost_consumed_total",
-        name="Costo Energia Consumata Totale",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        icon="mdi:currency-eur",
-        suggested_display_precision=2,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
-        key="cost_generated_total",
-        name="Valore Energia Generata Totale",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        icon="mdi:currency-eur",
-        suggested_display_precision=2,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
+    # --- OPERATING HOURS ---
     CvmSensorEntityDescription(
         key="operating_hours_total",
         name="Ore di Esercizio Totali",
@@ -710,79 +544,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
 )
 
 
-# Dynamically generate Max and Min entity descriptions
-MAX_MIN_BASE_VARS: list[tuple[str, str, SensorDeviceClass | None, str | None, int | None, tuple[str, ...]]] = [
-    ("voltage_l1", "Tensione L1", SensorDeviceClass.VOLTAGE, UnitOfElectricPotential.VOLT, 1, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("voltage_l2", "Tensione L2", SensorDeviceClass.VOLTAGE, UnitOfElectricPotential.VOLT, 1, (WIRING_3P4W, WIRING_3P3W)),
-    ("voltage_l3", "Tensione L3", SensorDeviceClass.VOLTAGE, UnitOfElectricPotential.VOLT, 1, (WIRING_3P4W, WIRING_3P3W)),
-    ("voltage_l1_l2", "Tensione Concatenata L1-L2", SensorDeviceClass.VOLTAGE, UnitOfElectricPotential.VOLT, 1, (WIRING_3P4W, WIRING_3P3W)),
-    ("voltage_l2_l3", "Tensione Concatenata L2-L3", SensorDeviceClass.VOLTAGE, UnitOfElectricPotential.VOLT, 1, (WIRING_3P4W, WIRING_3P3W)),
-    ("voltage_l3_l1", "Tensione Concatenata L3-L1", SensorDeviceClass.VOLTAGE, UnitOfElectricPotential.VOLT, 1, (WIRING_3P4W, WIRING_3P3W)),
-    ("current_l1", "Corrente L1", SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE, 2, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("current_l2", "Corrente L2", SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE, 2, (WIRING_3P4W, WIRING_3P3W)),
-    ("current_l3", "Corrente L3", SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE, 2, (WIRING_3P4W, WIRING_3P3W)),
-    ("current_neutral", "Corrente di Neutro", SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE, 2, (WIRING_3P4W,)),
-    ("power_active_total", "Potenza Attiva Totale", SensorDeviceClass.POWER, UnitOfPower.WATT, None, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_active_l1", "Potenza Attiva L1", SensorDeviceClass.POWER, UnitOfPower.WATT, None, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_active_l2", "Potenza Attiva L2", SensorDeviceClass.POWER, UnitOfPower.WATT, None, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_active_l3", "Potenza Attiva L3", SensorDeviceClass.POWER, UnitOfPower.WATT, None, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_reactive_ind_total", "Potenza Reattiva Induttiva Totale", None, "var", None, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_reactive_ind_l1", "Potenza Reattiva Induttiva L1", None, "var", None, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_reactive_ind_l2", "Potenza Reattiva Induttiva L2", None, "var", None, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_reactive_ind_l3", "Potenza Reattiva Induttiva L3", None, "var", None, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_reactive_cap_total", "Potenza Reattiva Capacitiva Totale", None, "var", None, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_reactive_cap_l1", "Potenza Reattiva Capacitiva L1", None, "var", None, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_reactive_cap_l2", "Potenza Reattiva Capacitiva L2", None, "var", None, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_reactive_cap_l3", "Potenza Reattiva Capacitiva L3", None, "var", None, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_apparent_total", "Potenza Apparente Totale", SensorDeviceClass.APPARENT_POWER, UnitOfApparentPower.VOLT_AMPERE, None, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_apparent_l1", "Potenza Apparente L1", SensorDeviceClass.APPARENT_POWER, UnitOfApparentPower.VOLT_AMPERE, None, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_apparent_l2", "Potenza Apparente L2", SensorDeviceClass.APPARENT_POWER, UnitOfApparentPower.VOLT_AMPERE, None, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_apparent_l3", "Potenza Apparente L3", SensorDeviceClass.APPARENT_POWER, UnitOfApparentPower.VOLT_AMPERE, None, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_factor_total", "Fattore di Potenza Totale", SensorDeviceClass.POWER_FACTOR, None, 2, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_factor_l1", "Fattore di Potenza L1", SensorDeviceClass.POWER_FACTOR, None, 2, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("power_factor_l2", "Fattore di Potenza L2", SensorDeviceClass.POWER_FACTOR, None, 2, (WIRING_3P4W, WIRING_3P3W)),
-    ("power_factor_l3", "Fattore di Potenza L3", SensorDeviceClass.POWER_FACTOR, None, 2, (WIRING_3P4W, WIRING_3P3W)),
-    ("cos_phi_total", "Cos φ Totale", None, None, 2, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("cos_phi_l1", "Cos φ L1", None, None, 2, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("cos_phi_l2", "Cos φ L2", None, None, 2, (WIRING_3P4W, WIRING_3P3W)),
-    ("cos_phi_l3", "Cos φ L3", None, None, 2, (WIRING_3P4W, WIRING_3P3W)),
-    ("frequency", "Frequenza di Rete", SensorDeviceClass.FREQUENCY, UnitOfFrequency.HERTZ, 2, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("thd_voltage_l1", "THD Tensione L1", None, "%", 1, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("thd_voltage_l2", "THD Tensione L2", None, "%", 1, (WIRING_3P4W, WIRING_3P3W)),
-    ("thd_voltage_l3", "THD Tensione L3", None, "%", 1, (WIRING_3P4W, WIRING_3P3W)),
-    ("thd_current_l1", "THD Corrente L1", None, "%", 1, (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
-    ("thd_current_l2", "THD Corrente L2", None, "%", 1, (WIRING_3P4W, WIRING_3P3W)),
-    ("thd_current_l3", "THD Corrente L3", None, "%", 1, (WIRING_3P4W, WIRING_3P3W)),
-]
-
-MAX_MIN_DESCRIPTIONS: list[CvmSensorEntityDescription] = []
-for key, name, dev_class, unit, prec, wirings in MAX_MIN_BASE_VARS:
-    MAX_MIN_DESCRIPTIONS.append(
-        CvmSensorEntityDescription(
-            key=f"{key}_max",
-            name=f"{name} (Max)",
-            device_class=dev_class,
-            state_class=SensorStateClass.MEASUREMENT,
-            native_unit_of_measurement=unit,
-            suggested_display_precision=prec,
-            entity_category=EntityCategory.DIAGNOSTIC,
-            wiring_supported=wirings,
-        )
-    )
-    MAX_MIN_DESCRIPTIONS.append(
-        CvmSensorEntityDescription(
-            key=f"{key}_min",
-            name=f"{name} (Min)",
-            device_class=dev_class,
-            state_class=SensorStateClass.MEASUREMENT,
-            native_unit_of_measurement=unit,
-            suggested_display_precision=prec,
-            entity_category=EntityCategory.DIAGNOSTIC,
-            wiring_supported=wirings,
-        )
-    )
-
-# Dynamically generate Harmonic entity descriptions (Fundamental + 2nd to 31st harmonic)
+# Dynamically generate Harmonic entity descriptions (disabled by default)
 HARMONIC_DESCRIPTIONS: list[CvmSensorEntityDescription] = []
 for phase, p_name, w_sup in [
     ("l1", "L1", (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)),
@@ -798,6 +560,7 @@ for phase, p_name, w_sup in [
             native_unit_of_measurement=UnitOfElectricPotential.VOLT,
             suggested_display_precision=1,
             entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
             wiring_supported=w_sup,
         )
     )
@@ -810,6 +573,7 @@ for phase, p_name, w_sup in [
             native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
             suggested_display_precision=2,
             entity_category=EntityCategory.DIAGNOSTIC,
+            entity_registry_enabled_default=False,
             wiring_supported=w_sup,
         )
     )
@@ -822,6 +586,7 @@ for phase, p_name, w_sup in [
                 native_unit_of_measurement="%",
                 suggested_display_precision=1,
                 entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
                 wiring_supported=w_sup,
             )
         )
@@ -833,12 +598,13 @@ for phase, p_name, w_sup in [
                 native_unit_of_measurement="%",
                 suggested_display_precision=1,
                 entity_category=EntityCategory.DIAGNOSTIC,
+                entity_registry_enabled_default=False,
                 wiring_supported=w_sup,
             )
         )
 
 ALL_SENSOR_DESCRIPTIONS: list[CvmSensorEntityDescription] = (
-    list(SENSOR_DESCRIPTIONS) + MAX_MIN_DESCRIPTIONS + HARMONIC_DESCRIPTIONS
+    list(SENSOR_DESCRIPTIONS) + HARMONIC_DESCRIPTIONS
 )
 
 
