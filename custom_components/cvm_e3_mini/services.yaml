@@ -38,14 +38,14 @@ set_tariff:
       name: Tariffa
       description: Numero della tariffa da attivare (1 o 2).
       required: true
-      default: 1
+      default: "1"
       selector:
         select:
           options:
             - label: Tariffa 1
-              value: 1
+              value: "1"
             - label: Tariffa 2
-              value: 2
+              value: "2"
 
 set_backlight:
   name: Imposta Retroilluminazione Display

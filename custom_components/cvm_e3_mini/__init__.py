@@ -129,8 +129,8 @@ def _register_services(hass: HomeAssistant) -> None:
 
     async def _handle_set_tariff(call: ServiceCall) -> None:
         """Handle setting active tariff."""
-        tariff = call.data.get("tariff", 1)
-        val = 0 if tariff == 1 else 1
+        tariff = str(call.data.get("tariff", "1"))
+        val = 0 if tariff == "1" else 1
         for coordinator in hass.data[DOMAIN].values():
             await coordinator.write_register(REG_TARIFF_SELECT, val)
 
