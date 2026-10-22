@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -29,31 +28,31 @@ class CvmBinarySensorEntityDescription(BinarySensorEntityDescription):
 BINARY_SENSOR_DESCRIPTIONS: tuple[CvmBinarySensorEntityDescription, ...] = (
     CvmBinarySensorEntityDescription(
         key="phase_rotation_error",
-        name="Errore Senso Ciclico Fasi",
+        translation_key="phase_rotation_error",
         device_class=BinarySensorDeviceClass.PROBLEM,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmBinarySensorEntityDescription(
         key="quadrant_consumed",
-        name="Quadrante Potenza Consumata",
+        translation_key="quadrant_consumed",
         icon="mdi:transmission-tower-import",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmBinarySensorEntityDescription(
         key="quadrant_generated",
-        name="Quadrante Potenza Generata",
+        translation_key="quadrant_generated",
         icon="mdi:transmission-tower-export",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmBinarySensorEntityDescription(
         key="quadrant_inductive",
-        name="Quadrante Potenza Induttiva",
+        translation_key="quadrant_inductive",
         icon="mdi:sine-wave",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmBinarySensorEntityDescription(
         key="quadrant_capacitive",
-        name="Quadrante Potenza Capacitiva",
+        translation_key="quadrant_capacitive",
         icon="mdi:sine-wave",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -80,6 +79,7 @@ class CvmE3MiniBinarySensor(CoordinatorEntity[CvmE3MiniCoordinator], BinarySenso
     """Representation of a Circutor CVM-E3-MINI binary sensor."""
 
     entity_description: CvmBinarySensorEntityDescription
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -90,8 +90,6 @@ class CvmE3MiniBinarySensor(CoordinatorEntity[CvmE3MiniCoordinator], BinarySenso
         """Initialize binary sensor."""
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_has_entity_name = True
-        self._attr_name = description.name
         device_id = coordinator.serial_number or entry_id
         self._attr_unique_id = f"{device_id}_{description.key}"
 

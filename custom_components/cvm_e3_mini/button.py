@@ -38,21 +38,21 @@ class CvmButtonEntityDescription(ButtonEntityDescription):
 BUTTON_DESCRIPTIONS: tuple[CvmButtonEntityDescription, ...] = (
     CvmButtonEntityDescription(
         key="reset_energy_threephase",
-        name="Azzera Contatori Energia Trifase",
+        translation_key="reset_energy_threephase",
         icon="mdi:counter",
         entity_category=EntityCategory.CONFIG,
         coil_address=COIL_RESET_ENERGY_THREEPHASE,
     ),
     CvmButtonEntityDescription(
         key="reset_energy_all",
-        name="Azzera Tutti i Contatori Energia (Fasi + Trifase)",
+        translation_key="reset_energy_all",
         icon="mdi:restore-alert",
         entity_category=EntityCategory.CONFIG,
         coil_address=COIL_RESET_ENERGY_ALL,
     ),
     CvmButtonEntityDescription(
         key="reset_all_parameters",
-        name="Azzera Tutti i Parametri",
+        translation_key="reset_all_parameters",
         icon="mdi:delete-alert",
         entity_category=EntityCategory.CONFIG,
         coil_address=COIL_RESET_ALL_PARAMETERS,
@@ -80,6 +80,7 @@ class CvmE3MiniButton(CoordinatorEntity[CvmE3MiniCoordinator], ButtonEntity):
     """Representation of a Circutor CVM-E3-MINI control button."""
 
     entity_description: CvmButtonEntityDescription
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -90,8 +91,6 @@ class CvmE3MiniButton(CoordinatorEntity[CvmE3MiniCoordinator], ButtonEntity):
         """Initialize button."""
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_has_entity_name = True
-        self._attr_name = description.name
         device_id = coordinator.serial_number or entry_id
         self._attr_unique_id = f"{device_id}_{description.key}"
 
@@ -110,7 +109,7 @@ class CvmE3MiniButton(CoordinatorEntity[CvmE3MiniCoordinator], ButtonEntity):
     async def async_press(self) -> None:
         """Handle button press."""
         coil = self.entity_description.coil_address
-        _LOGGER.info("Executing reset command on coil %s (%s)", hex(coil), self.entity_description.name)
+        _LOGGER.info("Executing reset command on coil %s (%s)", hex(coil), self.entity_description.key)
         success = await self.coordinator.write_coil(coil, True)
         if success:
             await self.coordinator.async_request_refresh()

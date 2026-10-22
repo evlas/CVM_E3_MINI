@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
-from homeassistant.components.select import SelectEntity, SelectEntityDescription
+from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
@@ -18,7 +17,7 @@ from .coordinator import CvmE3MiniCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-BACKLIGHT_OPTIONS = ["Sempre Acceso", "Temporizzato"]
+BACKLIGHT_OPTIONS = ["always_on", "timed"]
 
 
 async def async_setup_entry(
@@ -39,11 +38,12 @@ async def async_setup_entry(
 class CvmE3MiniBacklightSelect(CoordinatorEntity[CvmE3MiniCoordinator], SelectEntity):
     """Representation of Backlight mode entity."""
 
+    _attr_has_entity_name = True
+    _attr_translation_key = "backlight"
+
     def __init__(self, coordinator: CvmE3MiniCoordinator, entry_id: str) -> None:
         """Initialize backlight entity."""
         super().__init__(coordinator)
-        self._attr_has_entity_name = True
-        self._attr_name = "Retroilluminazione Display"
         device_id = coordinator.serial_number or entry_id
         self._attr_unique_id = f"{device_id}_backlight_select"
         self._attr_options = BACKLIGHT_OPTIONS
@@ -65,7 +65,7 @@ class CvmE3MiniBacklightSelect(CoordinatorEntity[CvmE3MiniCoordinator], SelectEn
 
     async def async_select_option(self, option: str) -> None:
         """Change selected option."""
-        val = 0 if option == "Sempre Acceso" else 1
+        val = 0 if option == "always_on" else 1
         success = await self.coordinator.write_register(REG_BACKLIGHT, val)
         if success:
             self._attr_current_option = option

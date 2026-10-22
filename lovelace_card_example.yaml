@@ -1,86 +1,78 @@
 # ==============================================================================
-# Circutor CVM-E3-MINI - Esempi di Schede Lovelace per la WebUI di Home Assistant
+# Circutor CVM-E3-MINI - Example Lovelace Card for Home Assistant Dashboard
 # ==============================================================================
 
 type: vertical-stack
-title: Analizzatore di Rete Circutor CVM-E3-MINI
+title: Circutor CVM-E3-MINI Analyzer
 cards:
-  # 1. PANORAMICA POTENZA E RETE
+  # 1. POWER & GRID OVERVIEW
   - type: glance
-    title: Stato Rete Elettrica
+    title: Electrical Grid Overview
     columns: 4
     entities:
-      - entity: sensor.circutor_cvm_e3_mini_frequenza_di_rete
-        name: Frequenza
-      - entity: sensor.circutor_cvm_e3_mini_potenza_attiva_totale
-        name: Potenza Attiva
-      - entity: sensor.circutor_cvm_e3_mini_fattore_di_potenza_totale
-        name: Fattore Potenza
-      - entity: binary_sensor.circutor_cvm_e3_mini_errore_senso_ciclico_fasi
-        name: Senso Ciclico
+      - entity: sensor.circutor_cvm_e3_mini_grid_frequency
+        name: Frequency
+      - entity: sensor.circutor_cvm_e3_mini_total_active_power
+        name: Active Power
+      - entity: sensor.circutor_cvm_e3_mini_total_power_factor
+        name: Power Factor
+      - entity: binary_sensor.circutor_cvm_e3_mini_phase_rotation_error
+        name: Phase Rotation
 
-  # 2. DETTAGLIO PER FASE (L1, L2, L3)
+  # 2. PER-PHASE DETAIL (L1, L2, L3)
   - type: entities
-    title: Misure di Fase
+    title: Phase Measurements
     show_header_toggle: false
     entities:
       - type: section
-        label: Tensione di Fase (V)
-      - entity: sensor.circutor_cvm_e3_mini_tensione_l1
-        name: Fase 1
-      - entity: sensor.circutor_cvm_e3_mini_tensione_l2
-        name: Fase 2
-      - entity: sensor.circutor_cvm_e3_mini_tensione_l3
-        name: Fase 3
+        label: Phase Voltage (V)
+      - entity: sensor.circutor_cvm_e3_mini_voltage_l1
+        name: Phase 1
+      - entity: sensor.circutor_cvm_e3_mini_voltage_l2
+        name: Phase 2
+      - entity: sensor.circutor_cvm_e3_mini_voltage_l3
+        name: Phase 3
       - type: section
-        label: Corrente di Linea e Neutro (A)
-      - entity: sensor.circutor_cvm_e3_mini_corrente_l1
-        name: Corrente L1
-      - entity: sensor.circutor_cvm_e3_mini_corrente_l2
-        name: Corrente L2
-      - entity: sensor.circutor_cvm_e3_mini_corrente_l3
-        name: Corrente L3
-      - entity: sensor.circutor_cvm_e3_mini_corrente_di_neutro
-        name: Neutro
+        label: Line & Neutral Current (A)
+      - entity: sensor.circutor_cvm_e3_mini_current_l1
+        name: Current L1
+      - entity: sensor.circutor_cvm_e3_mini_current_l2
+        name: Current L2
+      - entity: sensor.circutor_cvm_e3_mini_current_l3
+        name: Current L3
+      - entity: sensor.circutor_cvm_e3_mini_neutral_current
+        name: Neutral
       - type: section
-        label: Potenza Attiva per Fase (W)
-      - entity: sensor.circutor_cvm_e3_mini_potenza_attiva_l1
-        name: Potenza L1
-      - entity: sensor.circutor_cvm_e3_mini_potenza_attiva_l2
-        name: Potenza L2
-      - entity: sensor.circutor_cvm_e3_mini_potenza_attiva_l3
-        name: Potenza L3
+        label: Active Power per Phase (W)
+      - entity: sensor.circutor_cvm_e3_mini_active_power_l1
+        name: Power L1
+      - entity: sensor.circutor_cvm_e3_mini_active_power_l2
+        name: Power L2
+      - entity: sensor.circutor_cvm_e3_mini_active_power_l3
+        name: Power L3
 
-  # 3. CONTATORI ENERGIA
+  # 3. ENERGY COUNTERS
   - type: entities
-    title: Contatori Energia
+    title: Energy Counters
     show_header_toggle: false
     entities:
-      - entity: sensor.circutor_cvm_e3_mini_energia_attiva_consumata_totale
-        name: Energia Prelevata (Consumo)
-      - entity: sensor.circutor_cvm_e3_mini_energia_attiva_generata_totale
-        name: Energia Immessa (Produzione)
-      - entity: sensor.circutor_cvm_e3_mini_energia_reattiva_induttiva_consumata_totale
-        name: Energia Reattiva Induttiva
-      - entity: sensor.circutor_cvm_e3_mini_contatore_impulsi_ingresso_digitale
-        name: Impulsi Ingresso Digitale
+      - entity: sensor.circutor_cvm_e3_mini_total_active_energy_consumed
+        name: Consumed Energy (Import)
+      - entity: sensor.circutor_cvm_e3_mini_total_active_energy_generated
+        name: Generated Energy (Export)
+      - entity: sensor.circutor_cvm_e3_mini_total_inductive_reactive_energy_consumed
+        name: Inductive Reactive Energy
 
-  # 4. CONTROLLI E RESET (Pulsanti e Selettori direttamente dalla WebUI)
+  # 4. CONTROLS & RESETS
   - type: entities
-    title: Controlli e Reset
+    title: Controls & Reset
     show_header_toggle: false
     entities:
-      - entity: select.circutor_cvm_e3_mini_selezione_tariffa
-        name: Tariffa Attiva
-      - entity: select.circutor_cvm_e3_mini_retroilluminazione_display
-        name: Retroilluminazione Schermo
-      - entity: button.circutor_cvm_e3_mini_azzera_valori_massimi
-        name: Azzera Picchi Massimi
-      - entity: button.circutor_cvm_e3_mini_azzera_valori_minimi
-        name: Azzera Valori Minimi
-      - entity: button.circutor_cvm_e3_mini_azzera_massima_richiesta
-        name: Azzera Max Demand
-      - entity: button.circutor_cvm_e3_mini_azzera_contatori_energia_trifase
-        name: Azzera Contatori Energia Trifase
-      - entity: button.circutor_cvm_e3_mini_azzera_contatore_impulsi
-        name: Azzera Contatore Impulsi
+      - entity: select.circutor_cvm_e3_mini_display_backlight
+        name: Display Backlight
+      - entity: button.circutor_cvm_e3_mini_reset_three_phase_energy_counters
+        name: Reset Three-Phase Energy
+      - entity: button.circutor_cvm_e3_mini_reset_all_energy_counters
+        name: Reset All Energy Counters
+      - entity: button.circutor_cvm_e3_mini_reset_all_parameters
+        name: Reset All Parameters

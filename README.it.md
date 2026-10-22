@@ -18,9 +18,12 @@ Basata sulle specifiche ufficiali del manuale d'istruzioni **Circutor M170B01-01
 ## 🚀 Caratteristiche Principali
 
 - **Configurazione 100% da WebUI (Config Flow)**: Aggiunta guidata da *Impostazioni -> Dispositivi e Servizi -> Aggiungi Integrazione*.
+- **Supporto Multilingua Nativo (Home Assistant Entity Translations)**:
+  - Rispetta gli standard moderni di Home Assistant: gli `entity_id` sono standardizzati in inglese (es. `sensor.circutor_cvm_e3_mini_voltage_l1`).
+  - Il nome mostrato nell'interfaccia utente (Friendly Name) si adatta automaticamente alla lingua del profilo dell'utente (italiano e inglese inclusi).
 - **Supporto Modbus TCP e Modbus RTU**:
-  - **Modbus TCP**: Compatibile sia nativamente con i modelli **CVM-E3-MINI-xxx-WiEth** (Wi-Fi / Ethernet porta 502) sia tramite gateway seriale/Ethernet (es. Waveshare, USR-TCP232, Elfin EW11).
-  - **Modbus RTU**: Connessione diretta seriale RS-485 (porta `/dev/ttyUSB0`, convertitore USB-RS485).
+  - **Modbus TCP**: Compatibile sia nativamente con i modelli **CVM-E3-MINI-xxx-WiEth** (Wi-Fi / Ethernet porta 502) sia tramite gateway seriale/Ethernet (es. Waveshare, USR-TCP232, Elfin EW11). Supporta sia Modbus TCP standard che Modbus RTU over TCP.
+  - **Modbus RTU**: Connessione diretta seriale RS-485 (porta `/dev/ttyUSB0` o percorsi stabili `/dev/serial/by-id/...`).
 - **Rispettoso dei vincoli hardware Circutor**:
   - Implementa la lettura a blocchi (massimo 30 variabili / 60 registri per trama, come specificato a pag. 87 del manuale).
   - Cadenza inter-frame $\ge 100\text{ ms}$ e timeout per garantire stabilità con firmware $\ge \text{v}2.xx$.
@@ -30,7 +33,7 @@ Basata sulle specifiche ufficiali del manuale d'istruzioni **Circutor M170B01-01
 - **Monitoraggio Elettrico Completo**:
   - Tensioni di fase ($V_{L1}, V_{L2}, V_{L3}$) e concatenate ($V_{12}, V_{23}, V_{31}$).
   - Correnti di linea ($I_{L1}, I_{L2}, I_{L3}$) e corrente di Neutro ($I_N$).
-  - Potenze attive, reattive (induttiva e capacitiva) e apparenti (totali e per singola fase).
+  - Potenze attive, reattive (induttiva e capacitiva) e apparenti (totali e per singola fase) con supporto a valori negativi in caso di immissione.
   - Fattore di potenza ($PF$) e $\cos \varphi$ (totali e per fase).
   - Frequenza di rete ($Hz$).
   - Distorsione armonica totale (% THD Tensione e Corrente per ogni fase).
@@ -48,9 +51,7 @@ Basata sulle specifiche ufficiali del manuale d'istruzioni **Circutor M170B01-01
     - 🔄 *Azzera Contatori Energia Trifase*
     - 🔄 *Azzera Tutti i Contatori Energia (Fasi + Trifase)*
     - 🔄 *Azzera Tutti i Parametri*
-    - 🔄 *Azzera Ore Tariffa 1 / Tariffa 2*
   - **Selettori (Select entities)**:
-    - ⚙️ *Selezione Tariffa*: Tariffa 1 / Tariffa 2
     - 💡 *Retroilluminazione Display*: Sempre Acceso / Temporizzato
 - **Servizi dedicati per Automazioni**: Comandi di reset e configurazione invocabili come servizi nativi Home Assistant.
 
@@ -106,10 +107,10 @@ Per aggiungere il CVM-E3-MINI alla **Dashboard Energia** ufficiale di Home Assis
 
 1. Vai su **Impostazioni** -> **Dashboard** -> **Energia**.
 2. Sotto **Rete elettrica** -> **Consumo dalla rete**, clicca *Aggiungi consumo* e seleziona:
-   - `sensor.circutor_cvm_e3_mini_energia_attiva_consumata_totale`
+   - `sensor.circutor_cvm_e3_mini_total_active_energy_consumed` *(visualizzato come "Energia Attiva Consumata Totale")*
 3. Se hai un impianto fotovoltaico o generatore con immissione in rete:
    - Sotto **Immissione in rete**, clicca *Aggiungi immissione* e seleziona:
-   - `sensor.circutor_cvm_e3_mini_energia_attiva_generata_totale`
+   - `sensor.circutor_cvm_e3_mini_total_active_energy_generated` *(visualizzato come "Energia Attiva Generata Totale")*
 
 ---
 
@@ -125,31 +126,32 @@ title: Analizzatore Circutor CVM-E3-MINI
 cards:
   - type: glance
     entities:
-      - entity: sensor.circutor_cvm_e3_mini_tensione_l1
+      - entity: sensor.circutor_cvm_e3_mini_voltage_l1
         name: Tensione L1
-      - entity: sensor.circutor_cvm_e3_mini_corrente_l1
+      - entity: sensor.circutor_cvm_e3_mini_current_l1
         name: Corrente L1
-      - entity: sensor.circutor_cvm_e3_mini_potenza_attiva_totale
+      - entity: sensor.circutor_cvm_e3_mini_total_active_power
         name: Potenza Attiva
-      - entity: sensor.circutor_cvm_e3_mini_frequenza_di_rete
+      - entity: sensor.circutor_cvm_e3_mini_grid_frequency
         name: Frequenza
   - type: entities
     title: Comandi e Controlli
     entities:
-      - entity: select.circutor_cvm_e3_mini_selezione_tariffa
-      - entity: select.circutor_cvm_e3_mini_retroilluminazione_display
-      - entity: button.circutor_cvm_e3_mini_azzera_contatori_energia_trifase
-      - entity: button.circutor_cvm_e3_mini_azzera_tutti_i_contatori_energia
+      - entity: select.circutor_cvm_e3_mini_display_backlight
+      - entity: button.circutor_cvm_e3_mini_reset_three_phase_energy_counters
+      - entity: button.circutor_cvm_e3_mini_reset_all_energy_counters
+      - entity: button.circutor_cvm_e3_mini_reset_all_parameters
 ```
 
 ---
 
 ## 🛠️ Alternativa Senza Custom Component: Pacchetto YAML Nativo
 
-Se preferisci non usare Custom Component e configurare direttamente il componente nativo `modbus:` di Home Assistant, è fornito il file pronto all'uso:
-👉 [`cvm_e3_mini_modbus_package.yaml`](cvm_e3_mini_modbus_package.yaml)
+Se preferisci non usare Custom Component e configurare direttamente il componente nativo `modbus:` di Home Assistant, sono disponibili i file di configurazione pronti all'uso:
+- 🇮🇹 **Pacchetto in italiano**: [`cvm_e3_mini_modbus_package.it.yaml`](cvm_e3_mini_modbus_package.it.yaml)
+- 🇬🇧 **Pacchetto in inglese**: [`cvm_e3_mini_modbus_package.yaml`](cvm_e3_mini_modbus_package.yaml) (o [`cvm_e3_mini_modbus_package.en.yaml`](cvm_e3_mini_modbus_package.en.yaml))
 
-Basta posizionarlo nella cartella `config/packages/` del proprio Home Assistant.
+Basta posizionare il file scelto nella cartella `config/packages/` del proprio Home Assistant.
 
 ---
 
@@ -180,8 +182,6 @@ L'integrazione utilizza il **MAPA 2** raccomandato dal produttore:
 | **Energia Attiva Generata (Wh)** | `0x10F2` | 4338 | Uint32 | Wh (resto 0..999) |
 | **Reset Energie Trifase (Coil)**| `0x0834` | 2100 | Coil (Fn 0x05) | Scrittura 0xFF00 |
 | **Reset Tutte le Energie (Coil)**| `0x0874` | 2164 | Coil (Fn 0x05) | Scrittura 0xFF00 |
-| **Reset Ore T1 (Coil)** | `0x0837` | 2103 | Coil (Fn 0x05) | Scrittura 0xFF00 |
-| **Reset Ore T2 (Coil)** | `0x083A` | 2106 | Coil (Fn 0x05) | Scrittura 0xFF00 |
 | **Reset Tutti Parametri (Coil)**| `0x0898` | 2200 | Coil (Fn 0x05) | Scrittura 0xFF00 |
 
 ---

@@ -58,5 +58,141 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "voltage_l1": { "name": "Tensione L1" },
+      "voltage_l2": { "name": "Tensione L2" },
+      "voltage_l3": { "name": "Tensione L3" },
+      "voltage_l1_l2": { "name": "Tensione concatenata L1-L2" },
+      "voltage_l2_l3": { "name": "Tensione concatenata L2-L3" },
+      "voltage_l3_l1": { "name": "Tensione concatenata L3-L1" },
+      "current_l1": { "name": "Corrente L1" },
+      "current_l2": { "name": "Corrente L2" },
+      "current_l3": { "name": "Corrente L3" },
+      "current_neutral": { "name": "Corrente di neutro" },
+      "power_active_total": { "name": "Potenza attiva totale" },
+      "power_active_l1": { "name": "Potenza attiva L1" },
+      "power_active_l2": { "name": "Potenza attiva L2" },
+      "power_active_l3": { "name": "Potenza attiva L3" },
+      "power_reactive_ind_total": { "name": "Potenza reattiva induttiva totale" },
+      "power_reactive_ind_l1": { "name": "Potenza reattiva induttiva L1" },
+      "power_reactive_ind_l2": { "name": "Potenza reattiva induttiva L2" },
+      "power_reactive_ind_l3": { "name": "Potenza reattiva induttiva L3" },
+      "power_reactive_cap_total": { "name": "Potenza reattiva capacitiva totale" },
+      "power_reactive_cap_l1": { "name": "Potenza reattiva capacitiva L1" },
+      "power_reactive_cap_l2": { "name": "Potenza reattiva capacitiva L2" },
+      "power_reactive_cap_l3": { "name": "Potenza reattiva capacitiva L3" },
+      "power_apparent_total": { "name": "Potenza apparente totale" },
+      "power_apparent_l1": { "name": "Potenza apparente L1" },
+      "power_apparent_l2": { "name": "Potenza apparente L2" },
+      "power_apparent_l3": { "name": "Potenza apparente L3" },
+      "power_factor_total": { "name": "Fattore di potenza totale" },
+      "power_factor_l1": { "name": "Fattore di potenza L1" },
+      "power_factor_l2": { "name": "Fattore di potenza L2" },
+      "power_factor_l3": { "name": "Fattore di potenza L3" },
+      "cos_phi_total": { "name": "Cos φ totale" },
+      "cos_phi_l1": { "name": "Cos φ L1" },
+      "cos_phi_l2": { "name": "Cos φ L2" },
+      "cos_phi_l3": { "name": "Cos φ L3" },
+      "frequency": { "name": "Frequenza di rete" },
+      "thd_voltage_l1": { "name": "THD tensione L1" },
+      "thd_voltage_l2": { "name": "THD tensione L2" },
+      "thd_voltage_l3": { "name": "THD tensione L3" },
+      "thd_current_l1": { "name": "THD corrente L1" },
+      "thd_current_l2": { "name": "THD corrente L2" },
+      "thd_current_l3": { "name": "THD corrente L3" },
+      "energy_active_consumed_total": { "name": "Energia attiva consumata totale" },
+      "energy_reactive_ind_consumed_total": { "name": "Energia reattiva induttiva consumata totale" },
+      "energy_reactive_cap_consumed_total": { "name": "Energia reattiva capacitiva consumata totale" },
+      "energy_apparent_consumed_total": { "name": "Energia apparente consumata totale" },
+      "energy_active_generated_total": { "name": "Energia attiva generata totale" },
+      "energy_reactive_ind_generated_total": { "name": "Energia reattiva induttiva generata totale" },
+      "energy_reactive_cap_generated_total": { "name": "Energia reattiva capacitiva generata totale" },
+      "energy_apparent_generated_total": { "name": "Energia apparente generata totale" },
+      "internal_temperature": { "name": "Temperatura interna" },
+      "operating_hours_total": { "name": "Ore di esercizio totali" },
+      "voltage_fundamental_l1": { "name": "Tensione fondamentale L1" },
+      "voltage_fundamental_l2": { "name": "Tensione fondamentale L2" },
+      "voltage_fundamental_l3": { "name": "Tensione fondamentale L3" },
+      "current_fundamental_l1": { "name": "Corrente fondamentale L1" },
+      "current_fundamental_l2": { "name": "Corrente fondamentale L2" },
+      "current_fundamental_l3": { "name": "Corrente fondamentale L3" },
+      "voltage_harmonic": { "name": "Armonica tensione {phase} H{order}" },
+      "current_harmonic": { "name": "Armonica corrente {phase} H{order}" }
+    },
+    "binary_sensor": {
+      "phase_rotation_error": { "name": "Errore senso ciclico fasi" },
+      "quadrant_consumed": { "name": "Quadrante potenza consumata" },
+      "quadrant_generated": { "name": "Quadrante potenza generata" },
+      "quadrant_inductive": { "name": "Quadrante potenza induttiva" },
+      "quadrant_capacitive": { "name": "Quadrante potenza capacitiva" }
+    },
+    "button": {
+      "reset_energy_threephase": { "name": "Azzera contatori energia trifase" },
+      "reset_energy_all": { "name": "Azzera tutti i contatori energia" },
+      "reset_all_parameters": { "name": "Azzera tutti i parametri" }
+    },
+    "select": {
+      "backlight": {
+        "name": "Retroilluminazione display",
+        "state": {
+          "always_on": "Sempre acceso",
+          "timed": "Temporizzato"
+        }
+      }
+    }
+  },
+  "services": {
+    "reset_maximums": {
+      "name": "Azzera valori massimi",
+      "description": "Azzera tutti i valori di picco massimo registrati dall'analizzatore di rete Circutor CVM-E3-MINI."
+    },
+    "reset_minimums": {
+      "name": "Azzera valori minimi",
+      "description": "Azzera tutti i valori minimi registrati dall'analizzatore di rete Circutor CVM-E3-MINI."
+    },
+    "reset_max_demand": {
+      "name": "Azzera massima richiesta",
+      "description": "Inizializza e azzera i registri della massima richiesta (kW e kVA)."
+    },
+    "reset_energy_counters": {
+      "name": "Azzera contatori energia",
+      "description": "Azzera i contatori di energia (attiva, reattiva, apparente).",
+      "fields": {
+        "include_phase_energies": {
+          "name": "Includi energie per singola fase",
+          "description": "Se abilitato, azzera sia le energie trifase che quelle per singola fase (L1, L2, L3)."
+        }
+      }
+    },
+    "reset_pulse_counter": {
+      "name": "Azzera contatore impulsi",
+      "description": "Azzera il contatore di impulsi dell'ingresso digitale."
+    },
+    "reset_all": {
+      "name": "Reset totale parametri",
+      "description": "Esegue il reset di tutti i contatori, massimi, minimi e massima richiesta contemporaneamente."
+    },
+    "set_tariff": {
+      "name": "Imposta tariffa attiva",
+      "description": "Seleziona la tariffa attiva (Tariffa 1 o Tariffa 2).",
+      "fields": {
+        "tariff": {
+          "name": "Tariffa",
+          "description": "Numero della tariffa da attivare (1 o 2)."
+        }
+      }
+    },
+    "set_backlight": {
+      "name": "Imposta retroilluminazione display",
+      "description": "Configura la modalità di retroilluminazione del display (Sempre Acceso o Temporizzato).",
+      "fields": {
+        "mode": {
+          "name": "Modalità",
+          "description": "Modalità desiderata per la retroilluminazione."
+        }
+      }
+    }
   }
 }

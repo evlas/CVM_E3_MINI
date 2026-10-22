@@ -58,5 +58,141 @@
         }
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "voltage_l1": { "name": "Voltage L1" },
+      "voltage_l2": { "name": "Voltage L2" },
+      "voltage_l3": { "name": "Voltage L3" },
+      "voltage_l1_l2": { "name": "Phase-to-phase voltage L1-L2" },
+      "voltage_l2_l3": { "name": "Phase-to-phase voltage L2-L3" },
+      "voltage_l3_l1": { "name": "Phase-to-phase voltage L3-L1" },
+      "current_l1": { "name": "Current L1" },
+      "current_l2": { "name": "Current L2" },
+      "current_l3": { "name": "Current L3" },
+      "current_neutral": { "name": "Neutral current" },
+      "power_active_total": { "name": "Total active power" },
+      "power_active_l1": { "name": "Active power L1" },
+      "power_active_l2": { "name": "Active power L2" },
+      "power_active_l3": { "name": "Active power L3" },
+      "power_reactive_ind_total": { "name": "Total inductive reactive power" },
+      "power_reactive_ind_l1": { "name": "Inductive reactive power L1" },
+      "power_reactive_ind_l2": { "name": "Inductive reactive power L2" },
+      "power_reactive_ind_l3": { "name": "Inductive reactive power L3" },
+      "power_reactive_cap_total": { "name": "Total capacitive reactive power" },
+      "power_reactive_cap_l1": { "name": "Capacitive reactive power L1" },
+      "power_reactive_cap_l2": { "name": "Capacitive reactive power L2" },
+      "power_reactive_cap_l3": { "name": "Capacitive reactive power L3" },
+      "power_apparent_total": { "name": "Total apparent power" },
+      "power_apparent_l1": { "name": "Apparent power L1" },
+      "power_apparent_l2": { "name": "Apparent power L2" },
+      "power_apparent_l3": { "name": "Apparent power L3" },
+      "power_factor_total": { "name": "Total power factor" },
+      "power_factor_l1": { "name": "Power factor L1" },
+      "power_factor_l2": { "name": "Power factor L2" },
+      "power_factor_l3": { "name": "Power factor L3" },
+      "cos_phi_total": { "name": "Total cos φ" },
+      "cos_phi_l1": { "name": "Cos φ L1" },
+      "cos_phi_l2": { "name": "Cos φ L2" },
+      "cos_phi_l3": { "name": "Cos φ L3" },
+      "frequency": { "name": "Grid frequency" },
+      "thd_voltage_l1": { "name": "THD voltage L1" },
+      "thd_voltage_l2": { "name": "THD voltage L2" },
+      "thd_voltage_l3": { "name": "THD voltage L3" },
+      "thd_current_l1": { "name": "THD current L1" },
+      "thd_current_l2": { "name": "THD current L2" },
+      "thd_current_l3": { "name": "THD current L3" },
+      "energy_active_consumed_total": { "name": "Total active energy consumed" },
+      "energy_reactive_ind_consumed_total": { "name": "Total inductive reactive energy consumed" },
+      "energy_reactive_cap_consumed_total": { "name": "Total capacitive reactive energy consumed" },
+      "energy_apparent_consumed_total": { "name": "Total apparent energy consumed" },
+      "energy_active_generated_total": { "name": "Total active energy generated" },
+      "energy_reactive_ind_generated_total": { "name": "Total inductive reactive energy generated" },
+      "energy_reactive_cap_generated_total": { "name": "Total capacitive reactive energy generated" },
+      "energy_apparent_generated_total": { "name": "Total apparent energy generated" },
+      "internal_temperature": { "name": "Internal temperature" },
+      "operating_hours_total": { "name": "Total operating hours" },
+      "voltage_fundamental_l1": { "name": "Fundamental voltage L1" },
+      "voltage_fundamental_l2": { "name": "Fundamental voltage L2" },
+      "voltage_fundamental_l3": { "name": "Fundamental voltage L3" },
+      "current_fundamental_l1": { "name": "Fundamental current L1" },
+      "current_fundamental_l2": { "name": "Fundamental current L2" },
+      "current_fundamental_l3": { "name": "Fundamental current L3" },
+      "voltage_harmonic": { "name": "Voltage harmonic {phase} H{order}" },
+      "current_harmonic": { "name": "Current harmonic {phase} H{order}" }
+    },
+    "binary_sensor": {
+      "phase_rotation_error": { "name": "Phase rotation error" },
+      "quadrant_consumed": { "name": "Consumed power quadrant" },
+      "quadrant_generated": { "name": "Generated power quadrant" },
+      "quadrant_inductive": { "name": "Inductive power quadrant" },
+      "quadrant_capacitive": { "name": "Capacitive power quadrant" }
+    },
+    "button": {
+      "reset_energy_threephase": { "name": "Reset three-phase energy counters" },
+      "reset_energy_all": { "name": "Reset all energy counters" },
+      "reset_all_parameters": { "name": "Reset all parameters" }
+    },
+    "select": {
+      "backlight": {
+        "name": "Display backlight",
+        "state": {
+          "always_on": "Always on",
+          "timed": "Timed"
+        }
+      }
+    }
+  },
+  "services": {
+    "reset_maximums": {
+      "name": "Reset maximum values",
+      "description": "Resets all recorded peak maximum values on the Circutor CVM-E3-MINI power analyzer."
+    },
+    "reset_minimums": {
+      "name": "Reset minimum values",
+      "description": "Resets all recorded minimum values on the Circutor CVM-E3-MINI power analyzer."
+    },
+    "reset_max_demand": {
+      "name": "Reset maximum demand",
+      "description": "Initializes and resets the maximum demand registers (kW and kVA)."
+    },
+    "reset_energy_counters": {
+      "name": "Reset energy counters",
+      "description": "Resets energy counters (active, reactive, apparent).",
+      "fields": {
+        "include_phase_energies": {
+          "name": "Include single-phase energies",
+          "description": "If enabled, resets both three-phase energies and single-phase energies (L1, L2, L3)."
+        }
+      }
+    },
+    "reset_pulse_counter": {
+      "name": "Reset pulse counter",
+      "description": "Resets the digital input pulse counter."
+    },
+    "reset_all": {
+      "name": "Reset all parameters",
+      "description": "Performs a complete reset of all counters, maximums, minimums, and maximum demand simultaneously."
+    },
+    "set_tariff": {
+      "name": "Set active tariff",
+      "description": "Selects the active tariff (Tariff 1 or Tariff 2).",
+      "fields": {
+        "tariff": {
+          "name": "Tariff",
+          "description": "Tariff number to activate (1 or 2)."
+        }
+      }
+    },
+    "set_backlight": {
+      "name": "Set display backlight",
+      "description": "Configures the display backlight mode (Always on or Timed).",
+      "fields": {
+        "mode": {
+          "name": "Mode",
+          "description": "Desired backlight mode."
+        }
+      }
+    }
   }
 }

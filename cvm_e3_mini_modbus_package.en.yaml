@@ -1,0 +1,279 @@
+# ==============================================================================
+# Circutor CVM-E3-MINI - Native Home Assistant Modbus Package (English)
+# ==============================================================================
+# If you prefer using Home Assistant's native 'modbus' integration instead
+# of the Custom Component, copy this file into your config/packages/ folder.
+#
+# Register address notes:
+# This configuration uses MAP 2 (recommended by Circutor on page 88).
+# Hexadecimal addresses are converted to decimal:
+# 0x1000 = 4096, 0x1030 = 4144, 0x10DC = 4316, etc.
+# ==============================================================================
+
+modbus:
+  - name: cvm_e3_mini_hub
+    type: tcp
+    host: 192.168.1.150   # Replace with your CVM-E3-MINI-WiEth or Gateway IP address
+    port: 502
+    timeout: 2
+    delay: 1
+
+    # For RS-485 serial connection (uncomment below and comment TCP lines above):
+    # type: serial
+    # port: /dev/ttyUSB0
+    # baudrate: 19200
+    # bytesize: 8
+    # parity: N
+    # stopbits: 1
+
+    sensors:
+      # --- PHASE VOLTAGES ---
+      - name: "CVM-E3-MINI Voltage L1"
+        unique_id: cvm_e3_mini_v_l1
+        address: 4096 # 0x1000
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Voltage L2"
+        unique_id: cvm_e3_mini_v_l2
+        address: 4112 # 0x1010
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Voltage L3"
+        unique_id: cvm_e3_mini_v_l3
+        address: 4128 # 0x1020
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      # --- PHASE-TO-PHASE VOLTAGES ---
+      - name: "CVM-E3-MINI Voltage L1-L2"
+        unique_id: cvm_e3_mini_v_l12
+        address: 4158 # 0x103E
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Voltage L2-L3"
+        unique_id: cvm_e3_mini_v_l23
+        address: 4160 # 0x1040
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Voltage L3-L1"
+        unique_id: cvm_e3_mini_v_l31
+        address: 4162 # 0x1042
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.1
+        precision: 1
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        scan_interval: 10
+
+      # --- CURRENTS ---
+      - name: "CVM-E3-MINI Current L1"
+        unique_id: cvm_e3_mini_i_l1
+        address: 4098 # 0x1002
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Current L2"
+        unique_id: cvm_e3_mini_i_l2
+        address: 4114 # 0x1012
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Current L3"
+        unique_id: cvm_e3_mini_i_l3
+        address: 4130 # 0x1022
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Neutral Current"
+        unique_id: cvm_e3_mini_i_n
+        address: 4164 # 0x1044
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.001
+        precision: 2
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        scan_interval: 10
+
+      # --- ACTIVE POWER (Signed 32-bit: negative when generating power) ---
+      - name: "CVM-E3-MINI Total Active Power"
+        unique_id: cvm_e3_mini_p_tot
+        address: 4144 # 0x1030
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 1
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 5
+
+      - name: "CVM-E3-MINI Active Power L1"
+        unique_id: cvm_e3_mini_p_l1
+        address: 4100 # 0x1004
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 1
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Active Power L2"
+        unique_id: cvm_e3_mini_p_l2
+        address: 4116 # 0x1014
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 1
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Active Power L3"
+        unique_id: cvm_e3_mini_p_l3
+        address: 4132 # 0x1024
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 1
+        precision: 0
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        scan_interval: 10
+
+      # --- FREQUENCY AND POWER FACTOR ---
+      - name: "CVM-E3-MINI Frequency"
+        unique_id: cvm_e3_mini_freq
+        address: 4156 # 0x103C
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 0.01
+        precision: 2
+        unit_of_measurement: "Hz"
+        device_class: frequency
+        state_class: measurement
+        scan_interval: 10
+
+      - name: "CVM-E3-MINI Total Power Factor"
+        unique_id: cvm_e3_mini_pf_tot
+        address: 4152 # 0x1038
+        input_type: holding
+        slave: 1
+        data_type: int32
+        scale: 0.01
+        precision: 2
+        device_class: power_factor
+        state_class: measurement
+        scan_interval: 10
+
+      # --- TOTAL ENERGIES (Energy Dashboard Compatible) ---
+      - name: "CVM-E3-MINI Total Active Energy Consumed"
+        unique_id: cvm_e3_mini_energy_consumed_tot
+        address: 4316 # 0x10DC
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 1
+        precision: 1
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 30
+
+      - name: "CVM-E3-MINI Total Active Energy Generated"
+        unique_id: cvm_e3_mini_energy_generated_tot
+        address: 4336 # 0x10F0
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 1
+        precision: 1
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        scan_interval: 30
+
+      - name: "CVM-E3-MINI Total Inductive Reactive Energy Consumed"
+        unique_id: cvm_e3_mini_energy_q_ind_tot
+        address: 4320 # 0x10E0
+        input_type: holding
+        slave: 1
+        data_type: uint32
+        scale: 1
+        precision: 1
+        unit_of_measurement: "kvarh"
+        state_class: total_increasing
+        scan_interval: 30

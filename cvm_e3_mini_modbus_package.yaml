@@ -1,24 +1,24 @@
 # ==============================================================================
-# Circutor CVM-E3-MINI - Native Home Assistant Modbus Package
+# Circutor CVM-E3-MINI - Native Home Assistant Modbus Package (English)
 # ==============================================================================
-# Se preferisci usare l'integrazione nativa 'modbus' di Home Assistant invece
-# del Custom Component, copia questo file nella cartella config/packages/
+# If you prefer using Home Assistant's native 'modbus' integration instead
+# of the Custom Component, copy this file into your config/packages/ folder.
 #
-# Nota sugli indirizzi:
-# Questa configurazione utilizza il MAPA 2 (consigliato da Circutor a pag. 88).
-# Gli indirizzi esadecimali sono stati convertiti in decimale:
-# 0x1000 = 4096, 0x1030 = 4144, 0x10DC = 4316, ecc.
+# Register address notes:
+# This configuration uses MAP 2 (recommended by Circutor on page 88).
+# Hexadecimal addresses are converted to decimal:
+# 0x1000 = 4096, 0x1030 = 4144, 0x10DC = 4316, etc.
 # ==============================================================================
 
 modbus:
   - name: cvm_e3_mini_hub
     type: tcp
-    host: 192.168.1.150   # Sostituisci con l'IP del tuo CVM-E3-MINI-WiEth o Gateway
+    host: 192.168.1.150   # Replace with your CVM-E3-MINI-WiEth or Gateway IP address
     port: 502
     timeout: 2
     delay: 1
 
-    # Per connessione seriale RS-485 (decommentare e commentare le righe TCP sopra):
+    # For RS-485 serial connection (uncomment below and comment TCP lines above):
     # type: serial
     # port: /dev/ttyUSB0
     # baudrate: 19200
@@ -27,8 +27,8 @@ modbus:
     # stopbits: 1
 
     sensors:
-      # --- TENSIONI DI FASE ---
-      - name: "CVM-E3-MINI Tensione L1"
+      # --- PHASE VOLTAGES ---
+      - name: "CVM-E3-MINI Voltage L1"
         unique_id: cvm_e3_mini_v_l1
         address: 4096 # 0x1000
         input_type: holding
@@ -41,7 +41,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Tensione L2"
+      - name: "CVM-E3-MINI Voltage L2"
         unique_id: cvm_e3_mini_v_l2
         address: 4112 # 0x1010
         input_type: holding
@@ -54,7 +54,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Tensione L3"
+      - name: "CVM-E3-MINI Voltage L3"
         unique_id: cvm_e3_mini_v_l3
         address: 4128 # 0x1020
         input_type: holding
@@ -67,8 +67,8 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      # --- TENSIONI CONCATENATE ---
-      - name: "CVM-E3-MINI Tensione L1-L2"
+      # --- PHASE-TO-PHASE VOLTAGES ---
+      - name: "CVM-E3-MINI Voltage L1-L2"
         unique_id: cvm_e3_mini_v_l12
         address: 4158 # 0x103E
         input_type: holding
@@ -81,7 +81,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Tensione L2-L3"
+      - name: "CVM-E3-MINI Voltage L2-L3"
         unique_id: cvm_e3_mini_v_l23
         address: 4160 # 0x1040
         input_type: holding
@@ -94,7 +94,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Tensione L3-L1"
+      - name: "CVM-E3-MINI Voltage L3-L1"
         unique_id: cvm_e3_mini_v_l31
         address: 4162 # 0x1042
         input_type: holding
@@ -107,8 +107,8 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      # --- CORRENTI ---
-      - name: "CVM-E3-MINI Corrente L1"
+      # --- CURRENTS ---
+      - name: "CVM-E3-MINI Current L1"
         unique_id: cvm_e3_mini_i_l1
         address: 4098 # 0x1002
         input_type: holding
@@ -121,7 +121,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Corrente L2"
+      - name: "CVM-E3-MINI Current L2"
         unique_id: cvm_e3_mini_i_l2
         address: 4114 # 0x1012
         input_type: holding
@@ -134,7 +134,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Corrente L3"
+      - name: "CVM-E3-MINI Current L3"
         unique_id: cvm_e3_mini_i_l3
         address: 4130 # 0x1022
         input_type: holding
@@ -147,7 +147,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Corrente Neutro"
+      - name: "CVM-E3-MINI Neutral Current"
         unique_id: cvm_e3_mini_i_n
         address: 4164 # 0x1044
         input_type: holding
@@ -160,8 +160,8 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      # --- POTENZE ATTIVE (Signed 32-bit: negativo in generazione) ---
-      - name: "CVM-E3-MINI Potenza Attiva Totale"
+      # --- ACTIVE POWER (Signed 32-bit: negative when generating power) ---
+      - name: "CVM-E3-MINI Total Active Power"
         unique_id: cvm_e3_mini_p_tot
         address: 4144 # 0x1030
         input_type: holding
@@ -174,7 +174,7 @@ modbus:
         state_class: measurement
         scan_interval: 5
 
-      - name: "CVM-E3-MINI Potenza Attiva L1"
+      - name: "CVM-E3-MINI Active Power L1"
         unique_id: cvm_e3_mini_p_l1
         address: 4100 # 0x1004
         input_type: holding
@@ -187,7 +187,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Potenza Attiva L2"
+      - name: "CVM-E3-MINI Active Power L2"
         unique_id: cvm_e3_mini_p_l2
         address: 4116 # 0x1014
         input_type: holding
@@ -200,7 +200,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Potenza Attiva L3"
+      - name: "CVM-E3-MINI Active Power L3"
         unique_id: cvm_e3_mini_p_l3
         address: 4132 # 0x1024
         input_type: holding
@@ -213,8 +213,8 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      # --- FREQUENZA E FATTORE DI POTENZA ---
-      - name: "CVM-E3-MINI Frequenza"
+      # --- FREQUENCY AND POWER FACTOR ---
+      - name: "CVM-E3-MINI Frequency"
         unique_id: cvm_e3_mini_freq
         address: 4156 # 0x103C
         input_type: holding
@@ -227,7 +227,7 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      - name: "CVM-E3-MINI Fattore di Potenza Totale"
+      - name: "CVM-E3-MINI Total Power Factor"
         unique_id: cvm_e3_mini_pf_tot
         address: 4152 # 0x1038
         input_type: holding
@@ -239,8 +239,8 @@ modbus:
         state_class: measurement
         scan_interval: 10
 
-      # --- ENERGIE TOTALI (Compatibili Energy Dashboard) ---
-      - name: "CVM-E3-MINI Energia Attiva Consumata Totale"
+      # --- TOTAL ENERGIES (Energy Dashboard Compatible) ---
+      - name: "CVM-E3-MINI Total Active Energy Consumed"
         unique_id: cvm_e3_mini_energy_consumed_tot
         address: 4316 # 0x10DC
         input_type: holding
@@ -253,7 +253,7 @@ modbus:
         state_class: total_increasing
         scan_interval: 30
 
-      - name: "CVM-E3-MINI Energia Attiva Generata Totale"
+      - name: "CVM-E3-MINI Total Active Energy Generated"
         unique_id: cvm_e3_mini_energy_generated_tot
         address: 4336 # 0x10F0
         input_type: holding
@@ -266,7 +266,7 @@ modbus:
         state_class: total_increasing
         scan_interval: 30
 
-      - name: "CVM-E3-MINI Energia Reattiva Induttiva Consumata"
+      - name: "CVM-E3-MINI Total Inductive Reactive Energy Consumed"
         unique_id: cvm_e3_mini_energy_q_ind_tot
         address: 4320 # 0x10E0
         input_type: holding

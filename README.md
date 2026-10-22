@@ -18,6 +18,9 @@ Designed according to the official **Circutor M170B01-01** instruction manual sp
 ## 🚀 Key Features
 
 - **100% WebUI Configuration (Config Flow)**: Easy setup directly from *Settings -> Devices & Services -> Add Integration*.
+- **Native Multi-Language Support (Home Assistant Entity Translations)**:
+  - Adheres to modern Home Assistant standards with consistent, standardized entity IDs (e.g. `sensor.circutor_cvm_e3_mini_voltage_l1`).
+  - Entity friendly names dynamically display in the user's interface language (English and Italian included out of the box).
 - **Modbus TCP & Modbus RTU Support**:
   - **Modbus TCP**: Natively compatible with **CVM-E3-MINI-xxx-WiEth** models (Wi-Fi / Ethernet port 502) and serial-to-Ethernet gateways (e.g., Waveshare, USR-TCP232, Elfin EW11). Supports standard Modbus TCP or Modbus RTU over TCP.
   - **Modbus RTU**: Direct RS-485 serial connection (e.g. `/dev/ttyUSB0` or `/dev/serial/by-id/...`).
@@ -28,13 +31,12 @@ Designed according to the official **Circutor M170B01-01** instruction manual sp
   - Active energy consumed (import) and generated (export/PV) counters equipped with `device_class: energy` and `state_class: total_increasing`.
   - High-resolution energy counters with single Wh precision (3 decimal places for kWh, kvarh, kVAh) combining the kilo register and fractional Wh/varh/VAh remainder register.
 - **Comprehensive Electrical Monitoring**:
-  - Phase-to-Neutral voltages ($V_{L1}, V_{L2}, V_{L3}$) and Phase-to-Phase voltages ($V_{12}, V_{23}, V_{31}$) with Min/Max values.
-  - Line currents ($I_{L1}, I_{L2}, I_{L3}$) and Neutral current ($I_N$) with Min/Max values.
+  - Phase-to-Neutral voltages ($V_{L1}, V_{L2}, V_{L3}$) and Phase-to-Phase voltages ($V_{12}, V_{23}, V_{31}$).
+  - Line currents ($I_{L1}, I_{L2}, I_{L3}$) and Neutral current ($I_N$).
   - Active, reactive (inductive/capacitive), and apparent powers (total and per-phase) with signed values supporting generation/export.
   - Power factor ($PF$) and $\cos \varphi$ (total and per-phase).
   - Grid frequency ($Hz$).
   - Total Harmonic Distortion (% THD for Voltage and Current on all phases).
-  - Maximum demand peaks (kW, kVA, kvarL, kvarC, Currents L1/L2/L3).
   - Internal device temperature (°C).
   - Operating hours counter.
 - **Full Harmonic Spectrum (2nd to 31st Harmonics)**:
@@ -47,14 +49,9 @@ Designed according to the official **Circutor M170B01-01** instruction manual sp
   - **Buttons**:
     - 🔄 *Reset Three-Phase Energy Counters*
     - 🔄 *Reset All Energy Counters (Phases + Three-Phase)*
-    - 🔄 *Reset Maximum Values*
-    - 🔄 *Reset Minimum Values*
-    - 🔄 *Reset Max Demand*
     - 🔄 *Reset All Parameters*
-    - 🔄 *Reset Hours Tariff 1 / Tariff 2*
   - **Select Entities**:
-    - ⚙️ *Tariff Selection*: Tariff 1 / Tariff 2
-    - 💡 *Display Backlight*: Always ON / Timed
+    - 💡 *Display Backlight*: Always On / Timed
 - **Dedicated Automation Services**: Native Home Assistant services for automated resets and configuration.
 
 ---
@@ -109,10 +106,10 @@ To add the CVM-E3-MINI to Home Assistant's official **Energy Dashboard**:
 
 1. Go to **Settings** -> **Dashboards** -> **Energy**.
 2. Under **Electricity grid** -> **Grid consumption**, click *Add consumption* and select:
-   - `sensor.circutor_cvm_e3_mini_energia_attiva_consumata_totale`
+   - `sensor.circutor_cvm_e3_mini_total_active_energy_consumed`
 3. If you have a solar photovoltaic system or generator exporting power to the grid:
    - Under **Return to grid**, click *Add return* and select:
-   - `sensor.circutor_cvm_e3_mini_energia_attiva_generata_totale`
+   - `sensor.circutor_cvm_e3_mini_total_active_energy_generated`
 
 ---
 
@@ -128,31 +125,32 @@ title: Circutor CVM-E3-MINI Analyzer
 cards:
   - type: glance
     entities:
-      - entity: sensor.circutor_cvm_e3_mini_tensione_l1
+      - entity: sensor.circutor_cvm_e3_mini_voltage_l1
         name: Voltage L1
-      - entity: sensor.circutor_cvm_e3_mini_corrente_l1
+      - entity: sensor.circutor_cvm_e3_mini_current_l1
         name: Current L1
-      - entity: sensor.circutor_cvm_e3_mini_potenza_attiva_totale
+      - entity: sensor.circutor_cvm_e3_mini_total_active_power
         name: Active Power
-      - entity: sensor.circutor_cvm_e3_mini_frequenza_di_rete
+      - entity: sensor.circutor_cvm_e3_mini_grid_frequency
         name: Frequency
   - type: entities
     title: Controls & Reset
     entities:
-      - entity: select.circutor_cvm_e3_mini_selezione_tariffa
-      - entity: select.circutor_cvm_e3_mini_retroilluminazione_display
-      - entity: button.circutor_cvm_e3_mini_azzera_contatori_energia_trifase
-      - entity: button.circutor_cvm_e3_mini_azzera_tutti_i_contatori_energia
+      - entity: select.circutor_cvm_e3_mini_display_backlight
+      - entity: button.circutor_cvm_e3_mini_reset_three_phase_energy_counters
+      - entity: button.circutor_cvm_e3_mini_reset_all_energy_counters
+      - entity: button.circutor_cvm_e3_mini_reset_all_parameters
 ```
 
 ---
 
 ## 🛠️ Alternative Without Custom Component: Native YAML Package
 
-If you prefer not to use custom components and configure Home Assistant's native `modbus:` component instead, a ready-to-use package is provided:
-👉 [`cvm_e3_mini_modbus_package.yaml`](cvm_e3_mini_modbus_package.yaml)
+If you prefer not to use custom components and configure Home Assistant's native `modbus:` component instead, ready-to-use packages are provided:
+- 🇬🇧 **English package**: [`cvm_e3_mini_modbus_package.yaml`](cvm_e3_mini_modbus_package.yaml) (or [`cvm_e3_mini_modbus_package.en.yaml`](cvm_e3_mini_modbus_package.en.yaml))
+- 🇮🇹 **Italian package**: [`cvm_e3_mini_modbus_package.it.yaml`](cvm_e3_mini_modbus_package.it.yaml)
 
-Simply place it in your Home Assistant `config/packages/` directory.
+Simply place the chosen file into your Home Assistant `config/packages/` directory.
 
 ---
 
@@ -183,8 +181,6 @@ The integration uses the manufacturer's recommended **MAPA 2**:
 | **Active Energy Generated (Wh)** | `0x10F2` | 4338 | Uint32 | Wh remainder (0..999) |
 | **Reset Three-Phase Energy (Coil)**| `0x0834` | 2100 | Coil (Fn 0x05) | Write 0xFF00 |
 | **Reset All Energy (Coil)**| `0x0874` | 2164 | Coil (Fn 0x05) | Write 0xFF00 |
-| **Reset Tariff 1 Hours (Coil)** | `0x0837` | 2103 | Coil (Fn 0x05) | Write 0xFF00 |
-| **Reset Tariff 2 Hours (Coil)** | `0x083A` | 2106 | Coil (Fn 0x05) | Write 0xFF00 |
 | **Reset All Parameters (Coil)**| `0x0898` | 2200 | Coil (Fn 0x05) | Write 0xFF00 |
 
 ---

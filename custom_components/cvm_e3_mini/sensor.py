@@ -44,13 +44,14 @@ class CvmSensorEntityDescription(SensorEntityDescription):
     """Class describing CVM-E3-MINI sensor entities."""
 
     wiring_supported: tuple[str, ...] = (WIRING_3P4W, WIRING_3P3W, WIRING_1P2W)
+    translation_placeholders: dict[str, str] | None = None
 
 
 SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     # --- VOLTAGES ---
     CvmSensorEntityDescription(
         key="voltage_l1",
-        name="Tensione L1",
+        translation_key="voltage_l1",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -58,7 +59,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="voltage_l2",
-        name="Tensione L2",
+        translation_key="voltage_l2",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -67,7 +68,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="voltage_l3",
-        name="Tensione L3",
+        translation_key="voltage_l3",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -76,7 +77,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="voltage_l1_l2",
-        name="Tensione Concatenata L1-L2",
+        translation_key="voltage_l1_l2",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -85,7 +86,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="voltage_l2_l3",
-        name="Tensione Concatenata L2-L3",
+        translation_key="voltage_l2_l3",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -94,7 +95,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="voltage_l3_l1",
-        name="Tensione Concatenata L3-L1",
+        translation_key="voltage_l3_l1",
         device_class=SensorDeviceClass.VOLTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -105,7 +106,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     # --- CURRENTS ---
     CvmSensorEntityDescription(
         key="current_l1",
-        name="Corrente L1",
+        translation_key="current_l1",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -113,7 +114,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="current_l2",
-        name="Corrente L2",
+        translation_key="current_l2",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -122,7 +123,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="current_l3",
-        name="Corrente L3",
+        translation_key="current_l3",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -131,7 +132,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="current_neutral",
-        name="Corrente di Neutro",
+        translation_key="current_neutral",
         device_class=SensorDeviceClass.CURRENT,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -139,24 +140,24 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         wiring_supported=(WIRING_3P4W,),
     ),
 
-    # --- POWERS ---
+    # --- ACTIVE POWERS ---
     CvmSensorEntityDescription(
         key="power_active_total",
-        name="Potenza Attiva Totale",
+        translation_key="power_active_total",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
     ),
     CvmSensorEntityDescription(
         key="power_active_l1",
-        name="Potenza Attiva L1",
+        translation_key="power_active_l1",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
     ),
     CvmSensorEntityDescription(
         key="power_active_l2",
-        name="Potenza Attiva L2",
+        translation_key="power_active_l2",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
@@ -164,28 +165,30 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="power_active_l3",
-        name="Potenza Attiva L3",
+        translation_key="power_active_l3",
         device_class=SensorDeviceClass.POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfPower.WATT,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
+
+    # --- REACTIVE INDUCTIVE POWERS ---
     CvmSensorEntityDescription(
         key="power_reactive_ind_total",
-        name="Potenza Reattiva Induttiva Totale",
+        translation_key="power_reactive_ind_total",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="var",
     ),
     CvmSensorEntityDescription(
         key="power_reactive_ind_l1",
-        name="Potenza Reattiva Induttiva L1",
+        translation_key="power_reactive_ind_l1",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="var",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmSensorEntityDescription(
         key="power_reactive_ind_l2",
-        name="Potenza Reattiva Induttiva L2",
+        translation_key="power_reactive_ind_l2",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="var",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -193,28 +196,30 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="power_reactive_ind_l3",
-        name="Potenza Reattiva Induttiva L3",
+        translation_key="power_reactive_ind_l3",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="var",
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
+
+    # --- REACTIVE CAPACITIVE POWERS ---
     CvmSensorEntityDescription(
         key="power_reactive_cap_total",
-        name="Potenza Reattiva Capacitiva Totale",
+        translation_key="power_reactive_cap_total",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="var",
     ),
     CvmSensorEntityDescription(
         key="power_reactive_cap_l1",
-        name="Potenza Reattiva Capacitiva L1",
+        translation_key="power_reactive_cap_l1",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="var",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmSensorEntityDescription(
         key="power_reactive_cap_l2",
-        name="Potenza Reattiva Capacitiva L2",
+        translation_key="power_reactive_cap_l2",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="var",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -222,22 +227,24 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="power_reactive_cap_l3",
-        name="Potenza Reattiva Capacitiva L3",
+        translation_key="power_reactive_cap_l3",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="var",
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
+
+    # --- APPARENT POWERS ---
     CvmSensorEntityDescription(
         key="power_apparent_total",
-        name="Potenza Apparente Totale",
+        translation_key="power_apparent_total",
         device_class=SensorDeviceClass.APPARENT_POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
     ),
     CvmSensorEntityDescription(
         key="power_apparent_l1",
-        name="Potenza Apparente L1",
+        translation_key="power_apparent_l1",
         device_class=SensorDeviceClass.APPARENT_POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
@@ -245,7 +252,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="power_apparent_l2",
-        name="Potenza Apparente L2",
+        translation_key="power_apparent_l2",
         device_class=SensorDeviceClass.APPARENT_POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
@@ -254,16 +261,18 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="power_apparent_l3",
-        name="Potenza Apparente L3",
+        translation_key="power_apparent_l3",
         device_class=SensorDeviceClass.APPARENT_POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
+
+    # --- POWER FACTOR ---
     CvmSensorEntityDescription(
         key="power_factor_total",
-        name="Fattore di Potenza Totale",
+        translation_key="power_factor_total",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -271,7 +280,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="power_factor_l1",
-        name="Fattore di Potenza L1",
+        translation_key="power_factor_l1",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -280,7 +289,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="power_factor_l2",
-        name="Fattore di Potenza L2",
+        translation_key="power_factor_l2",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -290,7 +299,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="power_factor_l3",
-        name="Fattore di Potenza L3",
+        translation_key="power_factor_l3",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -298,9 +307,11 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
+
+    # --- COS PHI ---
     CvmSensorEntityDescription(
         key="cos_phi_total",
-        name="Cos φ Totale",
+        translation_key="cos_phi_total",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -308,7 +319,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="cos_phi_l1",
-        name="Cos φ L1",
+        translation_key="cos_phi_l1",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -317,7 +328,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="cos_phi_l2",
-        name="Cos φ L2",
+        translation_key="cos_phi_l2",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -327,7 +338,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="cos_phi_l3",
-        name="Cos φ L3",
+        translation_key="cos_phi_l3",
         device_class=SensorDeviceClass.POWER_FACTOR,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=PERCENTAGE,
@@ -339,7 +350,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     # --- FREQUENCY ---
     CvmSensorEntityDescription(
         key="frequency",
-        name="Frequenza di Rete",
+        translation_key="frequency",
         device_class=SensorDeviceClass.FREQUENCY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfFrequency.HERTZ,
@@ -349,7 +360,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     # --- HARMONICS / THD ---
     CvmSensorEntityDescription(
         key="thd_voltage_l1",
-        name="THD Tensione L1",
+        translation_key="thd_voltage_l1",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         suggested_display_precision=1,
@@ -357,7 +368,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="thd_voltage_l2",
-        name="THD Tensione L2",
+        translation_key="thd_voltage_l2",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         suggested_display_precision=1,
@@ -366,7 +377,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="thd_voltage_l3",
-        name="THD Tensione L3",
+        translation_key="thd_voltage_l3",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         suggested_display_precision=1,
@@ -375,7 +386,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="thd_current_l1",
-        name="THD Corrente L1",
+        translation_key="thd_current_l1",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         suggested_display_precision=1,
@@ -383,7 +394,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="thd_current_l2",
-        name="THD Corrente L2",
+        translation_key="thd_current_l2",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         suggested_display_precision=1,
@@ -392,7 +403,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="thd_current_l3",
-        name="THD Corrente L3",
+        translation_key="thd_current_l3",
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement="%",
         suggested_display_precision=1,
@@ -403,7 +414,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     # --- ENERGIES CONSUMED (HA ENERGY DASHBOARD) ---
     CvmSensorEntityDescription(
         key="energy_active_consumed_total",
-        name="Energia Attiva Consumata Totale",
+        translation_key="energy_active_consumed_total",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
@@ -411,21 +422,21 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_ind_consumed_total",
-        name="Energia Reattiva Induttiva Consumata Totale",
+        translation_key="energy_reactive_ind_consumed_total",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
         suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_cap_consumed_total",
-        name="Energia Reattiva Capacitiva Consumata Totale",
+        translation_key="energy_reactive_cap_consumed_total",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
         suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_apparent_consumed_total",
-        name="Energia Apparente Consumata Totale",
+        translation_key="energy_apparent_consumed_total",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kVAh",
         suggested_display_precision=3,
@@ -434,7 +445,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     # --- ENERGIES GENERATED ---
     CvmSensorEntityDescription(
         key="energy_active_generated_total",
-        name="Energia Attiva Generata Totale",
+        translation_key="energy_active_generated_total",
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
@@ -442,21 +453,21 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_ind_generated_total",
-        name="Energia Reattiva Induttiva Generata Totale",
+        translation_key="energy_reactive_ind_generated_total",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
         suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_cap_generated_total",
-        name="Energia Reattiva Capacitiva Generata Totale",
+        translation_key="energy_reactive_cap_generated_total",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
         suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_apparent_generated_total",
-        name="Energia Apparente Generata Totale",
+        translation_key="energy_apparent_generated_total",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kVAh",
         suggested_display_precision=3,
@@ -465,7 +476,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     # --- INTERNAL TEMPERATURE ---
     CvmSensorEntityDescription(
         key="internal_temperature",
-        name="Temperatura Interna",
+        translation_key="internal_temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.CELSIUS,
@@ -476,7 +487,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
     # --- OPERATING HOURS ---
     CvmSensorEntityDescription(
         key="operating_hours_total",
-        name="Ore di Esercizio Totali",
+        translation_key="operating_hours_total",
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfTime.HOURS,
@@ -496,7 +507,7 @@ for phase, p_name, w_sup in [
     HARMONIC_DESCRIPTIONS.append(
         CvmSensorEntityDescription(
             key=f"voltage_fundamental_{phase}",
-            name=f"Tensione Fondamentale {p_name}",
+            translation_key=f"voltage_fundamental_{phase}",
             device_class=SensorDeviceClass.VOLTAGE,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement=UnitOfElectricPotential.VOLT,
@@ -509,7 +520,7 @@ for phase, p_name, w_sup in [
     HARMONIC_DESCRIPTIONS.append(
         CvmSensorEntityDescription(
             key=f"current_fundamental_{phase}",
-            name=f"Corrente Fondamentale {p_name}",
+            translation_key=f"current_fundamental_{phase}",
             device_class=SensorDeviceClass.CURRENT,
             state_class=SensorStateClass.MEASUREMENT,
             native_unit_of_measurement=UnitOfElectricCurrent.AMPERE,
@@ -523,7 +534,8 @@ for phase, p_name, w_sup in [
         HARMONIC_DESCRIPTIONS.append(
             CvmSensorEntityDescription(
                 key=f"harmonic_v_{phase}_h{h}",
-                name=f"Armonica Tensione {p_name} H{h}",
+                translation_key="voltage_harmonic",
+                translation_placeholders={"phase": p_name, "order": str(h)},
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement="%",
                 suggested_display_precision=1,
@@ -535,7 +547,8 @@ for phase, p_name, w_sup in [
         HARMONIC_DESCRIPTIONS.append(
             CvmSensorEntityDescription(
                 key=f"harmonic_i_{phase}_h{h}",
-                name=f"Armonica Corrente {p_name} H{h}",
+                translation_key="current_harmonic",
+                translation_placeholders={"phase": p_name, "order": str(h)},
                 state_class=SensorStateClass.MEASUREMENT,
                 native_unit_of_measurement="%",
                 suggested_display_precision=1,
@@ -574,6 +587,7 @@ class CvmE3MiniSensor(CoordinatorEntity[CvmE3MiniCoordinator], SensorEntity):
     """Representation of a Circutor CVM-E3-MINI sensor."""
 
     entity_description: CvmSensorEntityDescription
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -584,8 +598,8 @@ class CvmE3MiniSensor(CoordinatorEntity[CvmE3MiniCoordinator], SensorEntity):
         """Initialize sensor."""
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_has_entity_name = True
-        self._attr_name = description.name
+        if description.translation_placeholders:
+            self._attr_translation_placeholders = description.translation_placeholders
         device_id = coordinator.serial_number or entry_id
         self._attr_unique_id = f"{device_id}_{description.key}"
 
