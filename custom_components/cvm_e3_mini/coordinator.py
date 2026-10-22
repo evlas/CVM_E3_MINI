@@ -373,53 +373,45 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 b3 = await self._read_registers(0x10DC, 42)
                 await asyncio.sleep(0.1)
 
-                # Active consumed
+                # Active consumed (kWh, 3 decimals)
                 kwh_c = _decode_u32(b3[0], b3[1])
                 wh_c = _decode_u32(b3[2], b3[3])
                 data["energy_active_consumed_total"] = round(kwh_c + (wh_c / 1000.0), 3)
-                data["energy_active_consumed_wh_total"] = (kwh_c * 1000) + wh_c
 
-                # Reactive inductive consumed
+                # Reactive inductive consumed (kvarh, 3 decimals)
                 kvarh_ind_c = _decode_u32(b3[4], b3[5])
                 varh_ind_c = _decode_u32(b3[6], b3[7])
                 data["energy_reactive_ind_consumed_total"] = round(kvarh_ind_c + (varh_ind_c / 1000.0), 3)
-                data["energy_reactive_ind_consumed_varh_total"] = (kvarh_ind_c * 1000) + varh_ind_c
 
-                # Reactive capacitive consumed
+                # Reactive capacitive consumed (kvarh, 3 decimals)
                 kvarh_cap_c = _decode_u32(b3[8], b3[9])
                 varh_cap_c = _decode_u32(b3[10], b3[11])
                 data["energy_reactive_cap_consumed_total"] = round(kvarh_cap_c + (varh_cap_c / 1000.0), 3)
-                data["energy_reactive_cap_consumed_varh_total"] = (kvarh_cap_c * 1000) + varh_cap_c
 
-                # Apparent consumed
+                # Apparent consumed (kVAh, 3 decimals)
                 kvah_c = _decode_u32(b3[12], b3[13])
                 vah_c = _decode_u32(b3[14], b3[15])
                 data["energy_apparent_consumed_total"] = round(kvah_c + (vah_c / 1000.0), 3)
-                data["energy_apparent_consumed_vah_total"] = (kvah_c * 1000) + vah_c
 
-                # Active generated
+                # Active generated (kWh, 3 decimals)
                 kwh_g = _decode_u32(b3[20], b3[21])
                 wh_g = _decode_u32(b3[22], b3[23])
                 data["energy_active_generated_total"] = round(kwh_g + (wh_g / 1000.0), 3)
-                data["energy_active_generated_wh_total"] = (kwh_g * 1000) + wh_g
 
-                # Reactive inductive generated
+                # Reactive inductive generated (kvarh, 3 decimals)
                 kvarh_ind_g = _decode_u32(b3[24], b3[25])
                 varh_ind_g = _decode_u32(b3[26], b3[27])
                 data["energy_reactive_ind_generated_total"] = round(kvarh_ind_g + (varh_ind_g / 1000.0), 3)
-                data["energy_reactive_ind_generated_varh_total"] = (kvarh_ind_g * 1000) + varh_ind_g
 
-                # Reactive capacitive generated
+                # Reactive capacitive generated (kvarh, 3 decimals)
                 kvarh_cap_g = _decode_u32(b3[28], b3[29])
                 varh_cap_g = _decode_u32(b3[30], b3[31])
                 data["energy_reactive_cap_generated_total"] = round(kvarh_cap_g + (varh_cap_g / 1000.0), 3)
-                data["energy_reactive_cap_generated_varh_total"] = (kvarh_cap_g * 1000) + varh_cap_g
 
-                # Apparent generated
+                # Apparent generated (kVAh, 3 decimals)
                 kvah_g = _decode_u32(b3[32], b3[33])
                 vah_g = _decode_u32(b3[34], b3[35])
                 data["energy_apparent_generated_total"] = round(kvah_g + (vah_g / 1000.0), 3)
-                data["energy_apparent_generated_vah_total"] = (kvah_g * 1000) + vah_g
 
                 data["operating_hours_total"] = round(_decode_u32(b3[40], b3[41]) / 3600.0, 2)  # converted to hours
 

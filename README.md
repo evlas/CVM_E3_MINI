@@ -24,7 +24,7 @@ Basata sulle specifiche ufficiali del manuale d'istruzioni **Circutor M170B01-01
   - Cadenza inter-frame $\ge 100\text{ ms}$ e timeout per garantire stabilità con firmware $\ge \text{v}2.xx$.
 - **Integrazione nativa con la Dashboard Energia di Home Assistant**:
   - Contatori di energia attiva consumata (prelievo) e generata (immissione/fotovoltaico) con `device_class: energy` e `state_class: total_increasing`.
-  - Risoluzione standard (kWh, kvarh, kVAh) e ad alta risoluzione (Wh, varh, VAh) sia per energia consumata che generata.
+  - Contatori di energia ad alta risoluzione con precisione al singolo Wh (3 decimali per kWh, kvarh, kVAh) sia per energia consumata che generata.
 - **Monitoraggio Completo (Istantanei, Massimi e Minimi)**:
   - Tensioni di fase ($V_{L1}, V_{L2}, V_{L3}$) e concatenate ($V_{12}, V_{23}, V_{31}$) con relativi valori Minimi e Massimi.
   - Correnti di linea ($I_{L1}, I_{L2}, I_{L3}$) e corrente di Neutro ($I_N$) con Minimi e Massimi.

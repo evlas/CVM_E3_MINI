@@ -400,7 +400,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         wiring_supported=(WIRING_3P4W, WIRING_3P3W),
     ),
 
-    # --- ENERGIES CONSUMED (HA ENERGY DASHBOARD & HIGH RES) ---
+    # --- ENERGIES CONSUMED (HA ENERGY DASHBOARD) ---
     CvmSensorEntityDescription(
         key="energy_active_consumed_total",
         name="Energia Attiva Consumata Totale",
@@ -410,26 +410,11 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
-        key="energy_active_consumed_wh_total",
-        name="Energia Attiva Consumata Totale (Wh)",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
         key="energy_reactive_ind_consumed_total",
         name="Energia Reattiva Induttiva Consumata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
         suggested_display_precision=3,
-    ),
-    CvmSensorEntityDescription(
-        key="energy_reactive_ind_consumed_varh_total",
-        name="Energia Reattiva Induttiva Consumata Totale (varh)",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="varh",
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_cap_consumed_total",
@@ -439,25 +424,11 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
-        key="energy_reactive_cap_consumed_varh_total",
-        name="Energia Reattiva Capacitiva Consumata Totale (varh)",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="varh",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
         key="energy_apparent_consumed_total",
         name="Energia Apparente Consumata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kVAh",
         suggested_display_precision=3,
-    ),
-    CvmSensorEntityDescription(
-        key="energy_apparent_consumed_vah_total",
-        name="Energia Apparente Consumata Totale (VAh)",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="VAh",
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
 
     # --- ENERGIES GENERATED ---
@@ -470,26 +441,11 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
-        key="energy_active_generated_wh_total",
-        name="Energia Attiva Generata Totale (Wh)",
-        device_class=SensorDeviceClass.ENERGY,
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement=UnitOfEnergy.WATT_HOUR,
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
         key="energy_reactive_ind_generated_total",
         name="Energia Reattiva Induttiva Generata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
         suggested_display_precision=3,
-    ),
-    CvmSensorEntityDescription(
-        key="energy_reactive_ind_generated_varh_total",
-        name="Energia Reattiva Induttiva Generata Totale (varh)",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="varh",
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_cap_generated_total",
@@ -499,25 +455,11 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
-        key="energy_reactive_cap_generated_varh_total",
-        name="Energia Reattiva Capacitiva Generata Totale (varh)",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="varh",
-        entity_category=EntityCategory.DIAGNOSTIC,
-    ),
-    CvmSensorEntityDescription(
         key="energy_apparent_generated_total",
         name="Energia Apparente Generata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kVAh",
         suggested_display_precision=3,
-    ),
-    CvmSensorEntityDescription(
-        key="energy_apparent_generated_vah_total",
-        name="Energia Apparente Generata Totale (VAh)",
-        state_class=SensorStateClass.TOTAL_INCREASING,
-        native_unit_of_measurement="VAh",
-        entity_category=EntityCategory.DIAGNOSTIC,
     ),
 
     # --- INTERNAL TEMPERATURE ---
