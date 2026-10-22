@@ -407,7 +407,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        suggested_display_precision=1,
+        suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_active_consumed_wh_total",
@@ -422,7 +422,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Energia Reattiva Induttiva Consumata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
-        suggested_display_precision=1,
+        suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_ind_consumed_varh_total",
@@ -436,7 +436,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Energia Reattiva Capacitiva Consumata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
-        suggested_display_precision=1,
+        suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_cap_consumed_varh_total",
@@ -450,7 +450,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Energia Apparente Consumata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kVAh",
-        suggested_display_precision=1,
+        suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_apparent_consumed_vah_total",
@@ -467,7 +467,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENERGY,
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement=UnitOfEnergy.KILO_WATT_HOUR,
-        suggested_display_precision=1,
+        suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_active_generated_wh_total",
@@ -482,7 +482,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Energia Reattiva Induttiva Generata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
-        suggested_display_precision=1,
+        suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_ind_generated_varh_total",
@@ -496,7 +496,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Energia Reattiva Capacitiva Generata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kvarh",
-        suggested_display_precision=1,
+        suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_reactive_cap_generated_varh_total",
@@ -510,7 +510,7 @@ SENSOR_DESCRIPTIONS: tuple[CvmSensorEntityDescription, ...] = (
         name="Energia Apparente Generata Totale",
         state_class=SensorStateClass.TOTAL_INCREASING,
         native_unit_of_measurement="kVAh",
-        suggested_display_precision=1,
+        suggested_display_precision=3,
     ),
     CvmSensorEntityDescription(
         key="energy_apparent_generated_vah_total",
