@@ -1,4 +1,4 @@
-# Circutor CVM-E3-MINI - Integrazione Home Assistant
+# Circutor CVM-E3-MINI - Home Assistant Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/default)
 [![GitHub Release](https://img.shields.io/github/v/release/evlas/CVM_E3_MINI?color=blue&style=flat-square)](https://github.com/evlas/CVM_E3_MINI/releases)
@@ -7,186 +7,188 @@
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2023.8%2B-blue.svg)](https://www.home-assistant.io/)
 
-Integrazione professionale per **Home Assistant** per l'analizzatore di rete trifase **Circutor CVM-E3-MINI** (e versioni WiEth / ITF / MC / FLEX) tramite protocollo **Modbus** (RTU su RS-485 o TCP su Ethernet/Wi-Fi/Gateway).
+🌐 *English | [Versione in italiano](README.it.md)*
 
-Basata sulle specifiche ufficiali del manuale d'istruzioni **Circutor M170B01-01**.
+Professional **Home Assistant** integration for the **Circutor CVM-E3-MINI** three-phase power analyzer (including WiEth / ITF / MC / FLEX models) via **Modbus** protocol (RTU over RS-485 or TCP over Ethernet/Wi-Fi/Gateway).
 
----
-
-## 🚀 Caratteristiche Principali
-
-- **Configurazione 100% da WebUI (Config Flow)**: Aggiunta guidata da *Impostazioni -> Dispositivi e Servizi -> Aggiungi Integrazione*.
-- **Supporto Modbus TCP e Modbus RTU**:
-  - **Modbus TCP**: Compatibile sia nativamente con i modelli **CVM-E3-MINI-xxx-WiEth** (Wi-Fi / Ethernet porta 502) sia tramite gateway seriale/Ethernet (es. Waveshare, USR-TCP232, Elfin EW11).
-  - **Modbus RTU**: Connessione diretta seriale RS-485 (porta `/dev/ttyUSB0`, convertitore USB-RS485).
-- **Rispettoso dei vincoli hardware Circutor**:
-  - Implementa la lettura a blocchi (massimo 30 variabili / 60 registri per trama, come specificato a pag. 87 del manuale).
-  - Cadenza inter-frame $\ge 100\text{ ms}$ e timeout per garantire stabilità con firmware $\ge \text{v}2.xx$.
-- **Integrazione nativa con la Dashboard Energia di Home Assistant**:
-  - Contatori di energia attiva consumata (prelievo) e generata (immissione/fotovoltaico) con `device_class: energy` e `state_class: total_increasing`.
-  - Contatori di energia ad alta risoluzione con precisione al singolo Wh (3 decimali per kWh, kvarh, kVAh) sia per energia consumata che generata.
-- **Monitoraggio Completo (Istantanei, Massimi e Minimi)**:
-  - Tensioni di fase ($V_{L1}, V_{L2}, V_{L3}$) e concatenate ($V_{12}, V_{23}, V_{31}$) con relativi valori Minimi e Massimi.
-  - Correnti di linea ($I_{L1}, I_{L2}, I_{L3}$) e corrente di Neutro ($I_N$) con Minimi e Massimi.
-  - Potenze attive, reattive (induttiva e capacitiva) e apparenti (totali e per singola fase) con Minimi e Massimi.
-  - Fattore di potenza ($PF$) e $\cos \varphi$ con Minimi e Massimi.
-  - Frequenza di rete ($Hz$) con Minimo e Massimo.
-  - Distorsione armonica totale (% THD Tensione e Corrente per ogni fase) con Minimi e Massimi.
-  - Picchi di massima richiesta (Max Demand kW, kVA, kvarL, kvarC, Correnti L1/L2/L3) con relativi picchi storici massimi.
-  - Temperatura interna dello strumento (°C) con Minimo e Massimo.
-  - Ore di funzionamento, emissioni di $\text{CO}_2$ e costi/valori economici stimati.
-- **Spettro Armonico Completo (Armoniche 2°..31°)**:
-  - Tensione Fondamentale e armoniche dalla 2ª alla 31ª per L1, L2, L3 (% rispetto alla fondamentale).
-  - Corrente Fondamentale e armoniche dalla 2ª alla 31ª per L1, L2, L3 (% rispetto alla fondamentale).
-- **Sensori Binari di Stato e Diagnostica**:
-  - Stato dell'ingresso digitale (Input logico) e contatore impulsi (Uint64).
-  - Stato dell'uscita digitale (Relè / Allarme).
-  - **Rilevamento errore sequenza fasi** (`binary_sensor` con classe `problem`, registro `0x07D5`).
-  - Quadrante operativo di lavoro a 4 quadranti (Consumo/Generazione, Induttivo/Capacitivo, registro `0x07D1`).
-  - Lettura matricola / numero di serie hardware univoco da registro `0x05AA`.
-- **Controllo e Reset direttamente dalla WebUI**:
-  - **Pulsanti (Button entities)**:
-    - 🔄 *Azzera Valori Massimi*
-    - 🔄 *Azzera Valori Minimi*
-    - 🔄 *Azzera Massima Richiesta (Max Demand)*
-    - 🔄 *Azzera Contatori Energia Trifase*
-    - 🔄 *Azzera Tutti i Contatori Energia (Fasi + Trifase)*
-    - 🔄 *Azzera Contatore Impulsi*
-    - 🔄 *Azzera Ore Tariffa 1 / Tariffa 2*
-    - 🔄 *Azzera Tutti i Parametri*
-  - **Selettori (Select entities)**:
-    - ⚙️ *Selezione Tariffa*: Tariffa 1 / Tariffa 2
-    - 💡 *Retroilluminazione Display*: Sempre Acceso / Temporizzato
-- **Servizi dedicati per Automazioni**: Tutti i comandi di azzeramento e controllo sono invocabili via servizio Home Assistant.
+Designed according to the official **Circutor M170B01-01** instruction manual specifications.
 
 ---
 
-## 📦 Installazione
+## 🚀 Key Features
 
-### Metodo 1: Tramite HACS (Consigliato)
+- **100% WebUI Configuration (Config Flow)**: Easy setup directly from *Settings -> Devices & Services -> Add Integration*.
+- **Modbus TCP & Modbus RTU Support**:
+  - **Modbus TCP**: Natively compatible with **CVM-E3-MINI-xxx-WiEth** models (Wi-Fi / Ethernet port 502) and serial-to-Ethernet gateways (e.g., Waveshare, USR-TCP232, Elfin EW11). Supports standard Modbus TCP or Modbus RTU over TCP.
+  - **Modbus RTU**: Direct RS-485 serial connection (e.g. `/dev/ttyUSB0` or `/dev/serial/by-id/...`).
+- **Respects Circutor Hardware Constraints**:
+  - Implements block reading (maximum 30 variables / 60 registers per frame, as specified on page 87 of the manual).
+  - Enforces $\ge 100\text{ ms}$ inter-frame delay and adaptive timeouts for stability with firmware $\ge \text{v}2.xx$.
+- **Native Home Assistant Energy Dashboard Integration**:
+  - Active energy consumed (import) and generated (export/PV) counters equipped with `device_class: energy` and `state_class: total_increasing`.
+  - High-resolution energy counters with single Wh precision (3 decimal places for kWh, kvarh, kVAh) combining the kilo register and fractional Wh/varh/VAh remainder register.
+- **Comprehensive Electrical Monitoring**:
+  - Phase-to-Neutral voltages ($V_{L1}, V_{L2}, V_{L3}$) and Phase-to-Phase voltages ($V_{12}, V_{23}, V_{31}$) with Min/Max values.
+  - Line currents ($I_{L1}, I_{L2}, I_{L3}$) and Neutral current ($I_N$) with Min/Max values.
+  - Active, reactive (inductive/capacitive), and apparent powers (total and per-phase) with signed values supporting generation/export.
+  - Power factor ($PF$) and $\cos \varphi$ (total and per-phase).
+  - Grid frequency ($Hz$).
+  - Total Harmonic Distortion (% THD for Voltage and Current on all phases).
+  - Maximum demand peaks (kW, kVA, kvarL, kvarC, Currents L1/L2/L3).
+  - Internal device temperature (°C).
+  - Operating hours counter.
+- **Full Harmonic Spectrum (2nd to 31st Harmonics)**:
+  - Fundamental and 2nd to 31st harmonic breakdown for Voltage and Current on L1, L2, L3 (% relative to fundamental, disabled by default to save resources).
+- **Binary Sensors & Diagnostics**:
+  - **Phase sequence error detection** (`binary_sensor` with `problem` device class, register `0x07D5`).
+  - 4-quadrant operational state (Import/Export, Inductive/Capacitive, register `0x07D1`).
+  - Hardware Serial Number readout from register `0x05AA`.
+- **Control & Reset directly from WebUI**:
+  - **Buttons**:
+    - 🔄 *Reset Three-Phase Energy Counters*
+    - 🔄 *Reset All Energy Counters (Phases + Three-Phase)*
+    - 🔄 *Reset Maximum Values*
+    - 🔄 *Reset Minimum Values*
+    - 🔄 *Reset Max Demand*
+    - 🔄 *Reset All Parameters*
+    - 🔄 *Reset Hours Tariff 1 / Tariff 2*
+  - **Select Entities**:
+    - ⚙️ *Tariff Selection*: Tariff 1 / Tariff 2
+    - 💡 *Display Backlight*: Always ON / Timed
+- **Dedicated Automation Services**: Native Home Assistant services for automated resets and configuration.
 
-1. Apri **HACS** in Home Assistant.
-2. Vai su **Integrazioni** -> Menu tre puntini in alto a destra -> **Repository personalizzati**.
-3. Incolla l'URL di questo repository, seleziona la categoria **Integrazione** e clicca **Aggiungi**.
-4. Cerca **Circutor CVM-E3-MINI** e clicca su **Scarica**.
-5. Riavvia Home Assistant.
+---
 
-### Metodo 2: Installazione Manuale
+## 📦 Installation
 
-1. Scarica la cartella `custom_components/cvm_e3_mini`.
-2. Copiala nella directory `custom_components/` della tua installazione di Home Assistant:
+### Method 1: Via HACS (Recommended)
+
+1. Open **HACS** in Home Assistant.
+2. Go to **Integrations** -> Click the three dots menu in the top right corner -> **Custom repositories**.
+3. Paste this repository URL, select the category **Integration**, and click **Add**.
+4. Search for **Circutor CVM-E3-MINI** and click **Download**.
+5. Restart Home Assistant.
+
+### Method 2: Manual Installation
+
+1. Download the `custom_components/cvm_e3_mini` directory.
+2. Copy it into the `custom_components/` folder of your Home Assistant installation:
    ```
    /config/custom_components/cvm_e3_mini/
    ```
-3. Riavvia Home Assistant.
+3. Restart Home Assistant.
 
 ---
 
-## ⚙️ Configurazione
+## ⚙️ Configuration
 
-1. Nella WebUI di Home Assistant, vai su **Impostazioni** -> **Dispositivi e Servizi**.
-2. Clicca su **Aggiungi Integrazione** in basso a destra.
-3. Cerca **Circutor CVM-E3-MINI**.
-4. Scegli la tipologia di connessione:
+1. In the Home Assistant WebUI, navigate to **Settings** -> **Devices & Services**.
+2. Click **Add Integration** in the bottom right corner.
+3. Search for **Circutor CVM-E3-MINI**.
+4. Select your connection type:
    - **Modbus TCP**:
-     - *Host*: Indirizzo IP dell'analizzatore (es. `192.168.1.150`).
-     - *Porta*: `502` (standard Modbus TCP).
-     - *Slave ID*: Numero periferico Modbus numerico (default `1`, campo numerico 1-255).
-     - *Tipo di protocollo TCP / Gateway*: Modbus TCP standard (per modelli WiEth o gateway che traducono Modbus TCP) oppure Modbus RTU over TCP (per gateway seriali trasparenti RS485-TCP come Waveshare/USR).
-     - *Tipo di impianto*: Trifase 4 fili (3P+N), Trifase 3 fili (3P), o Monofase.
-     - *Intervallo di scansione*: default `10` secondi.
-     - *Timeout di risposta*: default `3.0` secondi.
+     - *Host*: IP address of the analyzer or gateway (e.g., `192.168.1.150`).
+     - *Port*: `502` (standard Modbus TCP).
+     - *Slave ID*: Modbus device slave address (default `1`, range 1-255).
+     - *TCP Protocol / Gateway Type*: Standard Modbus TCP (for WiEth models or gateways translating Modbus TCP) or Modbus RTU over TCP (for transparent RS485-TCP gateways like Waveshare/USR).
+     - *System Wiring Type*: Three-phase 4-wire (3P+N), Three-phase 3-wire (3P), or Single-phase.
+     - *Scan Interval*: default `10` seconds.
+     - *Timeout*: default `3.0` seconds.
    - **Modbus RTU (RS-485)**:
-     - *Porta seriale*: es. `/dev/ttyUSB0` o `/dev/serial/by-id/...`
-     - *Baudrate*: default `19200` (o `9600`, `38400`, `57600`, `115200`).
-     - *Parità*: `Nessuna (None)`, `Pari (Even)`, `Dispari (Odd)` (default `None`).
-     - *Bit di stop*: `1` (o `2`).
+     - *Serial Port*: e.g. `/dev/ttyUSB0` or `/dev/serial/by-id/...`
+     - *Baudrate*: default `19200` (or `9600`, `38400`, `57600`, `115200`).
+     - *Parity*: `None`, `Even`, `Odd` (default `None`).
+     - *Stop Bits*: `1` (or `2`).
      - *Slave ID*: default `1`.
 
 ---
 
-## 📊 Dashboard Energia (Energy Dashboard)
+## 📊 Energy Dashboard Integration
 
-Per aggiungere il CVM-E3-MINI alla **Dashboard Energia** ufficiale di Home Assistant:
+To add the CVM-E3-MINI to Home Assistant's official **Energy Dashboard**:
 
-1. Vai su **Impostazioni** -> **Dashboard** -> **Energia**.
-2. Sotto **Rete elettrica** -> **Consumo dalla rete**, clicca *Aggiungi consumo* e seleziona:
+1. Go to **Settings** -> **Dashboards** -> **Energy**.
+2. Under **Electricity grid** -> **Grid consumption**, click *Add consumption* and select:
    - `sensor.circutor_cvm_e3_mini_energia_attiva_consumata_totale`
-3. Se hai un impianto fotovoltaico o generatore con immissione in rete:
-   - Sotto **Immissione in rete**, clicca *Aggiungi immissione* e seleziona:
+3. If you have a solar photovoltaic system or generator exporting power to the grid:
+   - Under **Return to grid**, click *Add return* and select:
    - `sensor.circutor_cvm_e3_mini_energia_attiva_generata_totale`
 
 ---
 
-## 🎛️ Esempio Scheda Lovelace (WebUI)
+## 🎛️ Lovelace Card Example
 
-Puoi importare la dashboard completa copiando il file [`lovelace_card_example.yaml`](lovelace_card_example.yaml) direttamente nell'editor delle schede di Lovelace.
+You can set up a dashboard card by copying [`lovelace_card_example.yaml`](lovelace_card_example.yaml) into the Lovelace card editor.
 
-Ecco un esempio compatto:
+Compact example:
 
 ```yaml
 type: vertical-stack
-title: Analizzatore Circutor CVM-E3-MINI
+title: Circutor CVM-E3-MINI Analyzer
 cards:
   - type: glance
     entities:
       - entity: sensor.circutor_cvm_e3_mini_tensione_l1
-        name: Tensione L1
+        name: Voltage L1
       - entity: sensor.circutor_cvm_e3_mini_corrente_l1
-        name: Corrente L1
+        name: Current L1
       - entity: sensor.circutor_cvm_e3_mini_potenza_attiva_totale
-        name: Potenza Attiva
+        name: Active Power
       - entity: sensor.circutor_cvm_e3_mini_frequenza_di_rete
-        name: Frequenza
+        name: Frequency
   - type: entities
-    title: Comandi e Reset
+    title: Controls & Reset
     entities:
       - entity: select.circutor_cvm_e3_mini_selezione_tariffa
       - entity: select.circutor_cvm_e3_mini_retroilluminazione_display
-      - entity: button.circutor_cvm_e3_mini_azzera_valori_massimi
-      - entity: button.circutor_cvm_e3_mini_azzera_massima_richiesta
       - entity: button.circutor_cvm_e3_mini_azzera_contatori_energia_trifase
+      - entity: button.circutor_cvm_e3_mini_azzera_tutti_i_contatori_energia
 ```
 
 ---
 
-## 🛠️ Alternativa Senza Custom Component: Pacchetto YAML Nativo
+## 🛠️ Alternative Without Custom Component: Native YAML Package
 
-Se preferisci non usare Custom Component e configurare direttamente il componente nativo `modbus:` di Home Assistant, è fornito il file pronto all'uso:
+If you prefer not to use custom components and configure Home Assistant's native `modbus:` component instead, a ready-to-use package is provided:
 👉 [`cvm_e3_mini_modbus_package.yaml`](cvm_e3_mini_modbus_package.yaml)
 
-Basta posizionarlo nella cartella `config/packages/` del proprio Home Assistant.
+Simply place it in your Home Assistant `config/packages/` directory.
 
 ---
 
-## 📑 Mappa Registri Modbus (Sintesi dal Manuale Circutor)
+## 📑 Modbus Register Map (Summary from Circutor Manual)
 
-L'integrazione utilizza il **MAPA 2** raccomandato dal produttore:
+The integration uses the manufacturer's recommended **MAPA 2**:
 
-| Parametro | Registro Hex | Registro Dec | Tipo Dati | Unità |
+| Parameter | Hex Register | Dec Register | Data Type | Units / Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **Tensione L1** | `0x1000` | 4096 | Uint32 | V $\times 10$ |
-| **Corrente L1** | `0x1002` | 4098 | Uint32 | mA |
-| **Potenza Attiva L1** | `0x1004` | 4100 | Int32 | W (segno negativo = gen) |
-| **Tensione L2** | `0x1010` | 4112 | Uint32 | V $\times 10$ |
-| **Corrente L2** | `0x1012` | 4114 | Uint32 | mA |
-| **Potenza Attiva L2** | `0x1014` | 4116 | Int32 | W |
-| **Tensione L3** | `0x1020` | 4128 | Uint32 | V $\times 10$ |
-| **Corrente L3** | `0x1022` | 4130 | Uint32 | mA |
-| **Potenza Attiva L3** | `0x1024` | 4132 | Int32 | W |
-| **Potenza Attiva Totale** | `0x1030` | 4144 | Int32 | W |
-| **Frequenza** | `0x103C` | 4156 | Uint32 | Hz $\times 100$ |
-| **Energia Attiva Consumata Totale** | `0x10DC` | 4316 | Uint32 | kWh |
-| **Energia Attiva Generata Totale** | `0x10F0` | 4336 | Uint32 | kWh |
-| **Reset Massimi (Coil)** | `0x0849` | 2121 | Coil (Fn 0x05) | Scrittura 0xFF00 |
-| **Reset Minimi (Coil)** | `0x084A` | 2122 | Coil (Fn 0x05) | Scrittura 0xFF00 |
-| **Reset Max Demand (Coil)** | `0x0852` | 2130 | Coil (Fn 0x05) | Scrittura 0xFF00 |
-| **Reset Energie Trifase (Coil)**| `0x0834` | 2100 | Coil (Fn 0x05) | Scrittura 0xFF00 |
-| **Reset Tutte le Energie (Coil)**| `0x0874` | 2164 | Coil (Fn 0x05) | Scrittura 0xFF00 |
-| **Reset Impulsi (Coil)** | `0x0884` | 2180 | Coil (Fn 0x05) | Scrittura 0xFF00 |
+| **Voltage L1** | `0x1000` | 4096 | Uint32 | V $\times 10$ |
+| **Current L1** | `0x1002` | 4098 | Uint32 | mA |
+| **Active Power L1** | `0x1004` | 4100 | Int32 | W (negative = generation) |
+| **Apparent Power L1** | `0x100A` | 4106 | Int32 | VA (negative = generation) |
+| **Voltage L2** | `0x1010` | 4112 | Uint32 | V $\times 10$ |
+| **Current L2** | `0x1012` | 4114 | Uint32 | mA |
+| **Active Power L2** | `0x1014` | 4116 | Int32 | W |
+| **Apparent Power L2** | `0x101A` | 4122 | Int32 | VA |
+| **Voltage L3** | `0x1020` | 4128 | Uint32 | V $\times 10$ |
+| **Current L3** | `0x1022` | 4130 | Uint32 | mA |
+| **Active Power L3** | `0x1024` | 4132 | Int32 | W |
+| **Apparent Power L3** | `0x102A` | 4138 | Int32 | VA |
+| **Total Active Power** | `0x1030` | 4144 | Int32 | W (negative = generation) |
+| **Total Apparent Power** | `0x1036` | 4150 | Int32 | VA (negative = generation) |
+| **Frequency** | `0x103C` | 4156 | Uint32 | Hz $\times 100$ |
+| **Active Energy Consumed (kWh)** | `0x10DC` | 4316 | Uint32 | kWh integer |
+| **Active Energy Consumed (Wh)** | `0x10DE` | 4318 | Uint32 | Wh remainder (0..999) |
+| **Active Energy Generated (kWh)** | `0x10F0` | 4336 | Uint32 | kWh integer |
+| **Active Energy Generated (Wh)** | `0x10F2` | 4338 | Uint32 | Wh remainder (0..999) |
+| **Reset Three-Phase Energy (Coil)**| `0x0834` | 2100 | Coil (Fn 0x05) | Write 0xFF00 |
+| **Reset All Energy (Coil)**| `0x0874` | 2164 | Coil (Fn 0x05) | Write 0xFF00 |
+| **Reset Tariff 1 Hours (Coil)** | `0x0837` | 2103 | Coil (Fn 0x05) | Write 0xFF00 |
+| **Reset Tariff 2 Hours (Coil)** | `0x083A` | 2106 | Coil (Fn 0x05) | Write 0xFF00 |
+| **Reset All Parameters (Coil)**| `0x0898` | 2200 | Coil (Fn 0x05) | Write 0xFF00 |
 
 ---
 
-## 📄 Licenza
+## 📄 License
 
-Distribuito sotto licenza GNU General Public License v3.0 (GPLv3). Consulta il file [LICENSE](LICENSE) per maggiori informazioni.
+Distributed under the GNU General Public License v3.0 (GPLv3). See [LICENSE](LICENSE) for details.
