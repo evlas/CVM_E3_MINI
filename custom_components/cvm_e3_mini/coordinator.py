@@ -315,7 +315,7 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["power_active_l1"] = _decode_s32(b1[4], b1[5])
                 data["power_reactive_ind_l1"] = _decode_s32(b1[6], b1[7])
                 data["power_reactive_cap_l1"] = _decode_s32(b1[8], b1[9])
-                data["power_apparent_l1"] = _decode_u32(b1[10], b1[11])
+                data["power_apparent_l1"] = _decode_s32(b1[10], b1[11])
                 data["power_factor_l1"] = _decode_s32(b1[12], b1[13])
                 data["cos_phi_l1"] = _decode_s32(b1[14], b1[15])
 
@@ -325,7 +325,7 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["power_active_l2"] = _decode_s32(b1[20], b1[21])
                 data["power_reactive_ind_l2"] = _decode_s32(b1[22], b1[23])
                 data["power_reactive_cap_l2"] = _decode_s32(b1[24], b1[25])
-                data["power_apparent_l2"] = _decode_u32(b1[26], b1[27])
+                data["power_apparent_l2"] = _decode_s32(b1[26], b1[27])
                 data["power_factor_l2"] = _decode_s32(b1[28], b1[29])
                 data["cos_phi_l2"] = _decode_s32(b1[30], b1[31])
 
@@ -335,7 +335,7 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["power_active_l3"] = _decode_s32(b1[36], b1[37])
                 data["power_reactive_ind_l3"] = _decode_s32(b1[38], b1[39])
                 data["power_reactive_cap_l3"] = _decode_s32(b1[40], b1[41])
-                data["power_apparent_l3"] = _decode_u32(b1[42], b1[43])
+                data["power_apparent_l3"] = _decode_s32(b1[42], b1[43])
                 data["power_factor_l3"] = _decode_s32(b1[44], b1[45])
                 data["cos_phi_l3"] = _decode_s32(b1[46], b1[47])
 
@@ -351,7 +351,7 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 await asyncio.sleep(0.1)
 
                 data["power_reactive_cap_total"] = _decode_s32(b2[0], b2[1])
-                data["power_apparent_total"] = _decode_u32(b2[2], b2[3])
+                data["power_apparent_total"] = _decode_s32(b2[2], b2[3])
                 data["power_factor_total"] = _decode_s32(b2[4], b2[5])
                 data["cos_phi_total"] = _decode_s32(b2[6], b2[7])
                 data["frequency"] = _decode_u32(b2[8], b2[9]) / 100.0
