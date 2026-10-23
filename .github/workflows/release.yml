@@ -15,6 +15,56 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Python and JSON Files
+        run: |
+          python3 -m py_compile custom_components/cvm_e3_mini/*.py
+          python3 -c "import json; [json.load(open(f)) for f in ['hacs.json', 'custom_components/cvm_e3_mini/manifest.json', 'custom_components/cvm_e3_mini/strings.json', 'custom_components/cvm_e3_mini/translations/en.json', 'custom_components/cvm_e3_mini/translations/it.json']]"
+
+      - name: Generate Changelog from Commits
+        run: |
+          git fetch --tags --force 2>/dev/null || true
+          TAG_NAME="${{ github.ref_name }}"
+          if [ -z "$TAG_NAME" ]; then
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+          fi
+
+          echo "Generazione Changelog per: $TAG_NAME"
+          PREV_TAG=$(git describe --tags --abbrev=0 "${TAG_NAME}^" 2>/dev/null || true)
+          TAG_MSG=$(git tag -l --format='%(contents)' "$TAG_NAME" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+
+          {
+            if [ -n "$TAG_MSG" ]; then
+              echo "### Note di rilascio"
+              echo "$TAG_MSG"
+              echo ""
+            fi
+
+            echo "### Modifiche"
+            if [ -n "$PREV_TAG" ]; then
+              echo "_Modifiche rispetto a \`$PREV_TAG\`:_"
+              echo ""
+              git log --no-merges --pretty=format:"- %s (%h)" "$PREV_TAG..$TAG_NAME"
+            else
+              echo "_Primo rilascio:_"
+              echo ""
+              git log --no-merges --pretty=format:"- %s (%h)" "$TAG_NAME"
+            fi
+            echo ""
+          } > CHANGELOG.md
+
+          cat CHANGELOG.md
+
+      - name: Update manifest version from tag
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [ -z "$TAG" ]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          VERSION="${TAG#v}"
+          python3 -c "import json; p='custom_components/cvm_e3_mini/manifest.json'; d=json.load(open(p)); d['version']='$VERSION'; json.dump(d, open(p, 'w'), indent=2); open(p, 'a').write('\n')"
 
       - name: Zip custom_components
         run: |
@@ -27,7 +77,7 @@ jobs:
           name: Release ${{ github.ref_name }}
           files: |
             cvm_e3_mini.zip
-          generate_release_notes: true
+          body_path: CHANGELOG.md
           draft: false
           prerelease: false
         env:
