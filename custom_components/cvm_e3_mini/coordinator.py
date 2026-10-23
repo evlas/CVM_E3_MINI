@@ -89,6 +89,7 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         hass: HomeAssistant,
         entry_data: dict[str, Any],
         scan_interval: int,
+        version: str | None = None,
     ) -> None:
         """Initialize coordinator."""
         super().__init__(
@@ -98,6 +99,7 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=timedelta(seconds=scan_interval),
         )
         self.entry_data = entry_data
+        self.version = version
         self.slave_id = int(entry_data.get(CONF_SLAVE_ID, DEFAULT_SLAVE_ID))
         self.conn_type = entry_data.get(CONF_CONNECTION_TYPE, CONN_TYPE_TCP)
         self.timeout = float(entry_data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT))

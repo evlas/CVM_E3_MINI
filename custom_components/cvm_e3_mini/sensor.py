@@ -37,6 +37,7 @@ from .const import (
     WIRING_3P4W,
 )
 from .coordinator import CvmE3MiniCoordinator
+from .entity import CvmE3MiniEntity
 
 
 @dataclass(frozen=True)
@@ -583,11 +584,10 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class CvmE3MiniSensor(CoordinatorEntity[CvmE3MiniCoordinator], SensorEntity):
+class CvmE3MiniSensor(CvmE3MiniEntity, SensorEntity):
     """Representation of a Circutor CVM-E3-MINI sensor."""
 
     entity_description: CvmSensorEntityDescription
-    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -602,18 +602,6 @@ class CvmE3MiniSensor(CoordinatorEntity[CvmE3MiniCoordinator], SensorEntity):
             self._attr_translation_placeholders = description.translation_placeholders
         device_id = coordinator.serial_number or entry_id
         self._attr_unique_id = f"{device_id}_{description.key}"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device information."""
-        device_id = self.coordinator.serial_number or self.coordinator.entry_data.get("unique_id", "cvm_e3_mini")
-        return DeviceInfo(
-            identifiers={(DOMAIN, str(device_id))},
-            name="Circutor CVM-E3-MINI",
-            manufacturer="Circutor",
-            model="CVM-E3-MINI",
-            serial_number=self.coordinator.serial_number,
-        )
 
     @property
     def native_value(self) -> Any:

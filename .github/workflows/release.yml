@@ -68,8 +68,8 @@ jobs:
 
       - name: Zip custom_components
         run: |
-          cd "${{ github.workspace }}"
-          zip -r cvm_e3_mini.zip custom_components/cvm_e3_mini
+          cd "${{ github.workspace }}/custom_components/cvm_e3_mini"
+          zip -r "${{ github.workspace }}/cvm_e3_mini.zip" . -x "*__pycache__*"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2

@@ -12,6 +12,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryNotReady
 import homeassistant.helpers.config_validation as cv
+from homeassistant.loader import async_get_integration
 
 from .const import (
     COIL_RESET_ALL_PARAMETERS,
@@ -55,7 +56,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         CONF_SCAN_INTERVAL, entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
     )
 
-    coordinator = CvmE3MiniCoordinator(hass, entry.data, scan_interval)
+    integration_version: str | None = None
+    try:
+        integration = await async_get_integration(hass, DOMAIN)
+        integration_version = integration.version
+    except Exception:
+        pass
+
+    coordinator = CvmE3MiniCoordinator(
+        hass=hass,
+        entry_data=entry.data,
+        scan_interval=scan_interval,
+        version=integration_version,
+    )
 
     try:
         await coordinator.async_config_entry_first_refresh()

@@ -24,6 +24,7 @@ from .const import (
     DOMAIN,
 )
 from .coordinator import CvmE3MiniCoordinator
+from .entity import CvmE3MiniEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,11 +77,10 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class CvmE3MiniButton(CoordinatorEntity[CvmE3MiniCoordinator], ButtonEntity):
+class CvmE3MiniButton(CvmE3MiniEntity, ButtonEntity):
     """Representation of a Circutor CVM-E3-MINI control button."""
 
     entity_description: CvmButtonEntityDescription
-    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -93,18 +93,6 @@ class CvmE3MiniButton(CoordinatorEntity[CvmE3MiniCoordinator], ButtonEntity):
         self.entity_description = description
         device_id = coordinator.serial_number or entry_id
         self._attr_unique_id = f"{device_id}_{description.key}"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device information."""
-        device_id = self.coordinator.serial_number or self.coordinator.entry_data.get("unique_id", "cvm_e3_mini")
-        return DeviceInfo(
-            identifiers={(DOMAIN, str(device_id))},
-            name="Circutor CVM-E3-MINI",
-            manufacturer="Circutor",
-            model="CVM-E3-MINI",
-            serial_number=self.coordinator.serial_number,
-        )
 
     async def async_press(self) -> None:
         """Handle button press."""

@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, REG_BACKLIGHT
 from .coordinator import CvmE3MiniCoordinator
+from .entity import CvmE3MiniEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,10 +36,9 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class CvmE3MiniBacklightSelect(CoordinatorEntity[CvmE3MiniCoordinator], SelectEntity):
+class CvmE3MiniBacklightSelect(CvmE3MiniEntity, SelectEntity):
     """Representation of Backlight mode entity."""
 
-    _attr_has_entity_name = True
     _attr_translation_key = "backlight"
 
     def __init__(self, coordinator: CvmE3MiniCoordinator, entry_id: str) -> None:
@@ -50,18 +50,6 @@ class CvmE3MiniBacklightSelect(CoordinatorEntity[CvmE3MiniCoordinator], SelectEn
         self._attr_current_option = BACKLIGHT_OPTIONS[0]
         self._attr_entity_category = EntityCategory.CONFIG
         self._attr_icon = "mdi:brightness-6"
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device information."""
-        device_id = self.coordinator.serial_number or self.coordinator.entry_data.get("unique_id", "cvm_e3_mini")
-        return DeviceInfo(
-            identifiers={(DOMAIN, str(device_id))},
-            name="Circutor CVM-E3-MINI",
-            manufacturer="Circutor",
-            model="CVM-E3-MINI",
-            serial_number=self.coordinator.serial_number,
-        )
 
     async def async_select_option(self, option: str) -> None:
         """Change selected option."""
