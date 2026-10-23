@@ -24,5 +24,5 @@ class CvmE3MiniEntity(CoordinatorEntity[CvmE3MiniCoordinator]):
             manufacturer="Circutor",
             model="CVM-E3-MINI",
             serial_number=self.coordinator.serial_number,
-            sw_version=self.coordinator.version or "0.0.5",
+            sw_version=str(self.coordinator.version) if self.coordinator.version else "0.0.5",
         )

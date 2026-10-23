@@ -59,7 +59,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     integration_version: str | None = None
     try:
         integration = await async_get_integration(hass, DOMAIN)
-        integration_version = integration.version
+        if integration.version is not None:
+            integration_version = str(integration.version)
     except Exception:
         pass
 
