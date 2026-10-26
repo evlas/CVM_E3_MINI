@@ -1,5 +1,9 @@
 # Circutor CVM-E3-MINI - Home Assistant Integration
 
+<p align="center">
+  <img src="custom_components/cvm_e3_mini/brand/icon.png" alt="Circutor CVM-E3-MINI" width="130">
+</p>
+
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/default)
 [![GitHub Release](https://img.shields.io/github/v/release/evlas/CVM_E3_MINI?color=blue&style=flat-square)](https://github.com/evlas/CVM_E3_MINI/releases)
 [![Hassfest](https://github.com/evlas/CVM_E3_MINI/actions/workflows/hassfest.yml/badge.svg)](https://github.com/evlas/CVM_E3_MINI/actions/workflows/hassfest.yml)
