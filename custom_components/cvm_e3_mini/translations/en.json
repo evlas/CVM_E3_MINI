@@ -19,6 +19,7 @@
           "wiring_system": "Electrical wiring system",
           "scan_interval": "Update interval (seconds)",
           "timeout": "Response timeout (seconds)",
+          "enable_harmonics": "Enable individual harmonics reading (2nd–31st)",
           "ignore_test": "Ignore connection test and add device anyway"
         }
       },
@@ -34,6 +35,7 @@
           "wiring_system": "Electrical wiring system",
           "scan_interval": "Update interval (seconds)",
           "timeout": "Response timeout (seconds)",
+          "enable_harmonics": "Enable individual harmonics reading (2nd–31st)",
           "ignore_test": "Ignore connection test and add device anyway"
         }
       }
@@ -54,7 +56,8 @@
         "data": {
           "scan_interval": "Update interval (seconds)",
           "wiring_system": "Electrical wiring system",
-          "timeout": "Response timeout (seconds)"
+          "timeout": "Response timeout (seconds)",
+          "enable_harmonics": "Enable individual harmonics reading (2nd–31st)"
         }
       }
     }

@@ -11,6 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 from homeassistant.loader import async_get_integration
 
@@ -66,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = CvmE3MiniCoordinator(
         hass=hass,
-        entry_data=entry.data,
+        entry_data={**entry.data, **entry.options},
         scan_interval=scan_interval,
         version=integration_version,
     )
@@ -97,6 +98,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         coordinator: CvmE3MiniCoordinator = hass.data[DOMAIN].pop(entry.entry_id)
         await coordinator.async_close()
+        if not hass.data[DOMAIN]:
+            _unregister_services(hass)
 
     return unload_ok
 
@@ -106,95 +109,160 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await hass.config_entries.async_reload(entry.entry_id)
 
 
+def _get_target_coordinators(
+    hass: HomeAssistant, call: ServiceCall
+) -> list[CvmE3MiniCoordinator]:
+    """Return target coordinators filtered by optional entry_id or device_id."""
+    domain_data: dict[str, CvmE3MiniCoordinator] = hass.data.get(DOMAIN, {})
+    entry_id = call.data.get("entry_id")
+    if entry_id and entry_id in domain_data:
+        return [domain_data[entry_id]]
+
+    device_id = call.data.get("device_id")
+    if device_id:
+        dev_reg = dr.async_get(hass)
+        device = dev_reg.async_get(device_id)
+        if device:
+            matched = [
+                domain_data[eid]
+                for eid in device.config_entries
+                if eid in domain_data
+            ]
+            if matched:
+                return matched
+
+    return list(domain_data.values())
+
+
+def _unregister_services(hass: HomeAssistant) -> None:
+    """Unregister custom services when last config entry is unloaded."""
+    for service_name in (
+        SERVICE_RESET_MAXIMUMS,
+        SERVICE_RESET_MINIMUMS,
+        SERVICE_RESET_MAX_DEMAND,
+        SERVICE_RESET_ENERGY_COUNTERS,
+        SERVICE_RESET_PULSE_COUNTER,
+        SERVICE_RESET_ALL,
+        SERVICE_SET_TARIFF,
+        SERVICE_SET_BACKLIGHT,
+    ):
+        if hass.services.has_service(DOMAIN, service_name):
+            hass.services.async_remove(DOMAIN, service_name)
+
+
 def _register_services(hass: HomeAssistant) -> None:
     """Register custom services for Circutor CVM-E3-MINI."""
+    base_target_schema = {
+        vol.Optional("entry_id"): cv.string,
+        vol.Optional("device_id"): cv.string,
+    }
 
     async def _handle_reset_maximums(call: ServiceCall) -> None:
         """Handle resetting maximum values."""
-        for coordinator in hass.data[DOMAIN].values():
+        for coordinator in _get_target_coordinators(hass, call):
             await coordinator.write_coil(COIL_RESET_MAXIMUMS, True)
 
     async def _handle_reset_minimums(call: ServiceCall) -> None:
         """Handle resetting minimum values."""
-        for coordinator in hass.data[DOMAIN].values():
+        for coordinator in _get_target_coordinators(hass, call):
             await coordinator.write_coil(COIL_RESET_MINIMUMS, True)
 
     async def _handle_reset_max_demand(call: ServiceCall) -> None:
         """Handle resetting max demand."""
-        for coordinator in hass.data[DOMAIN].values():
+        for coordinator in _get_target_coordinators(hass, call):
             await coordinator.write_coil(COIL_RESET_MAX_DEMAND, True)
 
     async def _handle_reset_energy(call: ServiceCall) -> None:
         """Handle resetting energy counters."""
         include_phase = call.data.get("include_phase_energies", True)
         coil = COIL_RESET_ENERGY_ALL if include_phase else COIL_RESET_ENERGY_THREEPHASE
-        for coordinator in hass.data[DOMAIN].values():
+        for coordinator in _get_target_coordinators(hass, call):
             await coordinator.write_coil(coil, True)
 
     async def _handle_reset_pulse(call: ServiceCall) -> None:
         """Handle resetting pulse counter."""
-        for coordinator in hass.data[DOMAIN].values():
+        for coordinator in _get_target_coordinators(hass, call):
             await coordinator.write_coil(COIL_RESET_PULSE_COUNTER, True)
 
     async def _handle_reset_all(call: ServiceCall) -> None:
         """Handle resetting all parameters."""
-        for coordinator in hass.data[DOMAIN].values():
+        for coordinator in _get_target_coordinators(hass, call):
             await coordinator.write_coil(COIL_RESET_ALL_PARAMETERS, True)
 
     async def _handle_set_tariff(call: ServiceCall) -> None:
         """Handle setting active tariff."""
         tariff = str(call.data.get("tariff", "1"))
         val = 0 if tariff == "1" else 1
-        for coordinator in hass.data[DOMAIN].values():
+        for coordinator in _get_target_coordinators(hass, call):
             await coordinator.write_register(REG_TARIFF_SELECT, val)
 
     async def _handle_set_backlight(call: ServiceCall) -> None:
         """Handle setting backlight mode."""
         mode = call.data.get("mode", "always_on")
         val = 0 if mode == "always_on" else 1
-        for coordinator in hass.data[DOMAIN].values():
+        for coordinator in _get_target_coordinators(hass, call):
             await coordinator.write_register(REG_BACKLIGHT, val)
 
     hass.services.async_register(
         DOMAIN,
         SERVICE_RESET_MAXIMUMS,
         _handle_reset_maximums,
+        schema=vol.Schema(base_target_schema),
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_RESET_MINIMUMS,
         _handle_reset_minimums,
+        schema=vol.Schema(base_target_schema),
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_RESET_MAX_DEMAND,
         _handle_reset_max_demand,
+        schema=vol.Schema(base_target_schema),
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_RESET_ENERGY_COUNTERS,
         _handle_reset_energy,
-        schema=vol.Schema({vol.Optional("include_phase_energies", default=True): cv.boolean}),
+        schema=vol.Schema(
+            {
+                **base_target_schema,
+                vol.Optional("include_phase_energies", default=True): cv.boolean,
+            }
+        ),
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_RESET_PULSE_COUNTER,
         _handle_reset_pulse,
+        schema=vol.Schema(base_target_schema),
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_RESET_ALL,
         _handle_reset_all,
+        schema=vol.Schema(base_target_schema),
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_TARIFF,
         _handle_set_tariff,
-        schema=vol.Schema({vol.Required("tariff"): vol.In([1, 2])}),
+        schema=vol.Schema(
+            {
+                **base_target_schema,
+                vol.Required("tariff"): vol.In([1, 2, "1", "2"]),
+            }
+        ),
     )
     hass.services.async_register(
         DOMAIN,
         SERVICE_SET_BACKLIGHT,
         _handle_set_backlight,
-        schema=vol.Schema({vol.Required("mode"): vol.In(["always_on", "timed"])}),
+        schema=vol.Schema(
+            {
+                **base_target_schema,
+                vol.Required("mode"): vol.In(["always_on", "timed"]),
+            }
+        ),
     )

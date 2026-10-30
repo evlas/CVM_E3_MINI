@@ -19,6 +19,7 @@
           "wiring_system": "Tipo di impianto elettrico",
           "scan_interval": "Intervallo di aggiornamento (secondi)",
           "timeout": "Timeout di risposta (secondi)",
+          "enable_harmonics": "Abilita lettura singole armoniche (2ª–31ª)",
           "ignore_test": "Ignora test ed aggiungi comunque il dispositivo"
         }
       },
@@ -34,6 +35,7 @@
           "wiring_system": "Tipo di impianto elettrico",
           "scan_interval": "Intervallo di aggiornamento (secondi)",
           "timeout": "Timeout di risposta (secondi)",
+          "enable_harmonics": "Abilita lettura singole armoniche (2ª–31ª)",
           "ignore_test": "Ignora test ed aggiungi comunque il dispositivo"
         }
       }
@@ -54,7 +56,8 @@
         "data": {
           "scan_interval": "Intervallo di aggiornamento (secondi)",
           "wiring_system": "Tipo di impianto elettrico",
-          "timeout": "Timeout di risposta (secondi)"
+          "timeout": "Timeout di risposta (secondi)",
+          "enable_harmonics": "Abilita lettura singole armoniche (2ª–31ª)"
         }
       }
     }

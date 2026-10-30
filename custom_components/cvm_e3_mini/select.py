@@ -10,6 +10,7 @@ from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN, REG_BACKLIGHT
@@ -36,7 +37,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class CvmE3MiniBacklightSelect(CvmE3MiniEntity, SelectEntity):
+class CvmE3MiniBacklightSelect(CvmE3MiniEntity, SelectEntity, RestoreEntity):
     """Representation of Backlight mode entity."""
 
     _attr_translation_key = "backlight"
@@ -47,9 +48,30 @@ class CvmE3MiniBacklightSelect(CvmE3MiniEntity, SelectEntity):
         device_id = coordinator.serial_number or entry_id
         self._attr_unique_id = f"{device_id}_backlight_select"
         self._attr_options = BACKLIGHT_OPTIONS
-        self._attr_current_option = BACKLIGHT_OPTIONS[0]
+        self._attr_current_option = (
+            coordinator.data.get("backlight", BACKLIGHT_OPTIONS[0])
+            if coordinator.data
+            else BACKLIGHT_OPTIONS[0]
+        )
         self._attr_entity_category = EntityCategory.CONFIG
         self._attr_icon = "mdi:brightness-6"
+
+    async def async_added_to_hass(self) -> None:
+        """Restore previous state if register was not read yet."""
+        await super().async_added_to_hass()
+        if (
+            (not self.coordinator.data or "backlight" not in self.coordinator.data)
+            and (last_state := await self.async_get_last_state()) is not None
+            and last_state.state in BACKLIGHT_OPTIONS
+        ):
+            self._attr_current_option = last_state.state
+
+    @property
+    def current_option(self) -> str | None:
+        """Return the current selected option."""
+        if self.coordinator.data and "backlight" in self.coordinator.data:
+            return self.coordinator.data["backlight"]
+        return self._attr_current_option
 
     async def async_select_option(self, option: str) -> None:
         """Change selected option."""
@@ -57,4 +79,6 @@ class CvmE3MiniBacklightSelect(CvmE3MiniEntity, SelectEntity):
         success = await self.coordinator.write_register(REG_BACKLIGHT, val)
         if success:
             self._attr_current_option = option
+            if self.coordinator.data is not None:
+                self.coordinator.data["backlight"] = option
             self.async_write_ha_state()

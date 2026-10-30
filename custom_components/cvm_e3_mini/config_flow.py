@@ -33,6 +33,7 @@ from .const import (
     CONF_BAUDRATE,
     CONF_BYTESIZE,
     CONF_CONNECTION_TYPE,
+    CONF_ENABLE_HARMONICS,
     CONF_FRAMER,
     CONF_HOST,
     CONF_PARITY,
@@ -47,6 +48,7 @@ from .const import (
     CONN_TYPE_TCP,
     DEFAULT_BAUDRATE,
     DEFAULT_BYTESIZE,
+    DEFAULT_ENABLE_HARMONICS,
     DEFAULT_FRAMER,
     DEFAULT_NAME,
     DEFAULT_PARITY,
@@ -376,6 +378,7 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         mode=NumberSelectorMode.BOX,
                     )
                 ),
+                vol.Optional(CONF_ENABLE_HARMONICS, default=DEFAULT_ENABLE_HARMONICS): bool,
                 vol.Optional("ignore_test", default=False): bool,
             }
         )
@@ -466,6 +469,7 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         mode=NumberSelectorMode.BOX,
                     )
                 ),
+                vol.Optional(CONF_ENABLE_HARMONICS, default=DEFAULT_ENABLE_HARMONICS): bool,
                 vol.Optional("ignore_test", default=False): bool,
             }
         )
@@ -482,9 +486,20 @@ class CvmE3MiniConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class CvmE3MiniOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options for Circutor CVM-E3-MINI."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+    def __init__(self, config_entry: config_entries.ConfigEntry | None = None) -> None:
         """Initialize options flow."""
-        self._config_entry = config_entry
+        self._config_entry_compat = config_entry
+
+    @property
+    def config_entry(self) -> config_entries.ConfigEntry:
+        """Return the config entry, compatible across HA versions."""
+        try:
+            entry = super().config_entry
+            if entry is not None:
+                return entry
+        except Exception:
+            pass
+        return self._config_entry_compat  # type: ignore[return-value]
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage options."""
@@ -502,6 +517,10 @@ class CvmE3MiniOptionsFlowHandler(config_entries.OptionsFlow):
         current_timeout = self.config_entry.options.get(
             CONF_TIMEOUT,
             self.config_entry.data.get(CONF_TIMEOUT, DEFAULT_TIMEOUT),
+        )
+        current_harmonics = self.config_entry.options.get(
+            CONF_ENABLE_HARMONICS,
+            self.config_entry.data.get(CONF_ENABLE_HARMONICS, DEFAULT_ENABLE_HARMONICS),
         )
 
         schema = vol.Schema(
@@ -529,6 +548,7 @@ class CvmE3MiniOptionsFlowHandler(config_entries.OptionsFlow):
                         mode=NumberSelectorMode.BOX,
                     )
                 ),
+                vol.Optional(CONF_ENABLE_HARMONICS, default=current_harmonics): bool,
             }
         )
 

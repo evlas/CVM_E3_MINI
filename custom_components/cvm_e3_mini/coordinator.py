@@ -29,6 +29,7 @@ from .const import (
     CONF_BAUDRATE,
     CONF_BYTESIZE,
     CONF_CONNECTION_TYPE,
+    CONF_ENABLE_HARMONICS,
     CONF_FRAMER,
     CONF_HOST,
     CONF_PARITY,
@@ -39,6 +40,7 @@ from .const import (
     CONF_TIMEOUT,
     CONF_WIRING_SYSTEM,
     CONN_TYPE_TCP,
+    DEFAULT_ENABLE_HARMONICS,
     DEFAULT_FRAMER,
     DEFAULT_PORT,
     DEFAULT_SLAVE_ID,
@@ -46,6 +48,7 @@ from .const import (
     DOMAIN,
     FRAMER_RTU,
     FRAMER_SOCKET,
+    REG_BACKLIGHT,
     REG_PHASE_ROTATION_ERROR,
     REG_POWER_STATUS,
     REG_SERIAL_NUMBER_START,
@@ -418,39 +421,50 @@ class CvmE3MiniCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data["operating_hours_total"] = round(_decode_u32(b3[40], b3[41]) / 3600.0, 2)  # converted to hours
 
                 # -------------------------------------------------------------
-                # BLOCK 4: Harmonics (0x1A28 - 0x1AE7)
+                # BLOCK 4: Harmonics (0x1A28 - 0x1AE7) — only if enabled
+                # -------------------------------------------------------------
+                if self.entry_data.get(CONF_ENABLE_HARMONICS, DEFAULT_ENABLE_HARMONICS):
+                    try:
+                        wiring = self.entry_data.get(CONF_WIRING_SYSTEM, WIRING_3P4W)
+                        # L1 Harmonics (32 registers each)
+                        b_vh1 = await self._read_registers(0x1A28, 32)
+                        _decode_harmonics_voltage(b_vh1, "l1", data)
+                        await asyncio.sleep(0.05)
+
+                        b_ih1 = await self._read_registers(0x1A88, 32)
+                        _decode_harmonics_current(b_ih1, "l1", data)
+                        await asyncio.sleep(0.05)
+
+                        if wiring in (WIRING_3P4W, WIRING_3P3W):
+                            # L2 Harmonics
+                            b_vh2 = await self._read_registers(0x1A48, 32)
+                            _decode_harmonics_voltage(b_vh2, "l2", data)
+                            await asyncio.sleep(0.05)
+
+                            b_ih2 = await self._read_registers(0x1AA8, 32)
+                            _decode_harmonics_current(b_ih2, "l2", data)
+                            await asyncio.sleep(0.05)
+
+                            # L3 Harmonics
+                            b_vh3 = await self._read_registers(0x1A68, 32)
+                            _decode_harmonics_voltage(b_vh3, "l3", data)
+                            await asyncio.sleep(0.05)
+
+                            b_ih3 = await self._read_registers(0x1AC8, 32)
+                            _decode_harmonics_current(b_ih3, "l3", data)
+                            await asyncio.sleep(0.05)
+                    except Exception as err:
+                        _LOGGER.debug("Could not read harmonic registers: %s", err)
+
+                # -------------------------------------------------------------
+                # Backlight configuration register (0x271B)
                 # -------------------------------------------------------------
                 try:
-                    wiring = self.entry_data.get(CONF_WIRING_SYSTEM, WIRING_3P4W)
-                    # L1 Harmonics (32 registers each)
-                    b_vh1 = await self._read_registers(0x1A28, 32)
-                    _decode_harmonics_voltage(b_vh1, "l1", data)
+                    bl_regs = await self._read_registers(REG_BACKLIGHT, 1)
+                    data["backlight"] = "always_on" if bl_regs[0] == 0 else "timed"
                     await asyncio.sleep(0.05)
-
-                    b_ih1 = await self._read_registers(0x1A88, 32)
-                    _decode_harmonics_current(b_ih1, "l1", data)
-                    await asyncio.sleep(0.05)
-
-                    if wiring in (WIRING_3P4W, WIRING_3P3W):
-                        # L2 Harmonics
-                        b_vh2 = await self._read_registers(0x1A48, 32)
-                        _decode_harmonics_voltage(b_vh2, "l2", data)
-                        await asyncio.sleep(0.05)
-
-                        b_ih2 = await self._read_registers(0x1AA8, 32)
-                        _decode_harmonics_current(b_ih2, "l2", data)
-                        await asyncio.sleep(0.05)
-
-                        # L3 Harmonics
-                        b_vh3 = await self._read_registers(0x1A68, 32)
-                        _decode_harmonics_voltage(b_vh3, "l3", data)
-                        await asyncio.sleep(0.05)
-
-                        b_ih3 = await self._read_registers(0x1AC8, 32)
-                        _decode_harmonics_current(b_ih3, "l3", data)
-                        await asyncio.sleep(0.05)
                 except Exception as err:
-                    _LOGGER.debug("Could not read harmonic registers: %s", err)
+                    _LOGGER.debug("Could not read backlight register 0x271B: %s", err)
 
                 # -------------------------------------------------------------
                 # Internal Temperature (M1 0x0050)
